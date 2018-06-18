@@ -10,7 +10,36 @@ The proposed dissertation project is building on the recent momentum in applying
 * Vesko Cholakov
 
 ### Dependencies ###
-* Python 3.5
+* Python >= 3.6
+* TensorFlow
+* IPython
+
+* NumPy >= 1.11.0 – just because, how do you do ML without it
+* Pandas >= 0.18.1
+* SciPy >= 0.18.1
+
+* Magenta
+* Pillow >= 3.4.2
+* bokeh >= 0.12.0
+* intervaltree >= 2.1.0
+* librosa >= 0.6.0
+* matplotlib >= 1.5.3
+* mido == 1.2.6
+* mir_eval >= 0.4
+* pretty_midi >= 0.2.6
+* python-rtmidi
+* wheel
+
+
+* [music21](http://web.mit.edu/music21/) – for handling MusicXML
+* [MuseScore](https://musescore.org/en) – extends music21 to allow import/export of MusicXML, and view/edit/export of musical data
 
 ### Who do I talk to? ###
 For more information/enquiries contact one the administrators of the repository.
+
+
+### Steps ###
+
+1. [Install Magenta](https://github.com/tensorflow/magenta/blob/master/README.md)
+2. [Build dataset -- convert MusicXML to NoteSequences](https://github.com/tensorflow/magenta/blob/master/magenta/scripts/README.md)
+

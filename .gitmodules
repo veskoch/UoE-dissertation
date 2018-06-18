@@ -1,0 +1,3 @@
+[submodule "magenta"]
+	path = magenta
+	url = https://github.com/tensorflow/magenta.git
