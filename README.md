@@ -12,7 +12,7 @@ The proposed dissertation project is building on the recent momentum in applying
 The instruction below pertain to Mac OSX High Sierra.
 
 
-### Other ###
+### System-level ###
 * Python >= 3.6
 * [Bazel](https://docs.bazel.build/versions/master/install.html) latest version
 
@@ -20,12 +20,14 @@ The instruction below pertain to Mac OSX High Sierra.
 * IPython
 * Anaconda
 
+* [OpenNMT-tf](https://github.com/OpenNMT/OpenNMT-tf)
+* [magenta](https://github.com/tensorflow/magenta/blob/master/README.md) = 0.3.8
+
 * tensorflow
 * numpy >= 1.11.0 – just because, how do you do ML without it
 * pandas >= 0.18.1
 * scipy >= 0.18.1
 
-* [magenta](https://github.com/tensorflow/magenta/blob/master/README.md) = 0.3.8
 * pillow >= 3.4.2
 * bokeh >= 0.12.0
 * intervaltree >= 2.1.0
