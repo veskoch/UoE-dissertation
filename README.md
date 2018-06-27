@@ -20,7 +20,7 @@ The instruction below pertain to Mac OSX High Sierra.
 * IPython
 * Anaconda
 
-* [OpenNMT-tf](https://github.com/OpenNMT/OpenNMT-tf)
+* [OpenNMT-tf](https://github.com/OpenNMT/OpenNMT-tf) = 1.5.0s
 * [magenta](https://github.com/tensorflow/magenta/blob/master/README.md) = 0.3.8
 
 * tensorflow
