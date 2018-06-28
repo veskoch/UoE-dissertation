@@ -4,8 +4,6 @@ import shutil
 
 import pandas as pd
 
-import constants
-
 from magenta.music import musicxml_reader
 from magenta.music import note_sequence_io 
 
