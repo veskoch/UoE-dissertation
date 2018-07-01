@@ -3,7 +3,7 @@
 # without caring about their consistency.
 
 # The directory where models and summaries will be saved. It is created if it does not exist.
-model_dir: model_run_dir
+model_dir: log_dir
 
 data:
   # (required for train_and_eval and train run types).
@@ -15,8 +15,8 @@ data:
   eval_labels_file: data/performance_seq_text/eval_arrangement_targets.txt
 
   # (optional) Models may require additional resource files (e.g. vocabularies).
-  source_words_vocabulary: data/toy-ende/src-vocab.txt
-  target_words_vocabulary: data/toy-ende/tgt-vocab.txt
+  source_words_vocabulary: data/performance_seq_text/vocab.txt
+  target_words_vocabulary: data/performance_seq_text/vocab.txt
 
 # Model and optimization parameters.
 params:
@@ -82,19 +82,19 @@ train:
   # (optional) Batch size is the number of "examples" or "tokens" (default: "examples").
   batch_type: examples
   # (optional) Save a checkpoint every this many steps.
-  save_checkpoints_steps: 5000
+  save_checkpoints_steps: 5
   # (optional) How many checkpoints to keep on disk.
-  keep_checkpoint_max: 3
+  keep_checkpoint_max: 5
   # (optional) Save summaries every this many steps.
-  save_summary_steps: 100
+  save_summary_steps: 5
   # (optional) Train for this many steps. If not set, train forever.
   train_steps: 1000000
   # (optional) If true, makes a single pass over the training data (default: false).
   single_pass: false
   # (optional) The maximum length of feature sequences during training (default: None).
-  maximum_features_length: 70
+  maximum_features_length: 1000
   # (optional) The maximum length of label sequences during training (default: None).
-  maximum_labels_length: 70
+  maximum_labels_length: 1000
   # (optional) The width of the length buckets to select batch candidates from (default: 5).
   bucket_width: 5
   # (optional) The number of threads to use for processing data in parallel (default: 4).

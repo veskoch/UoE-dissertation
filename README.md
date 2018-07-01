@@ -14,33 +14,46 @@ The instruction below pertain to Mac OSX High Sierra.
 
 ### System-level ###
 * Python >= 3.6
-* [Bazel](https://docs.bazel.build/versions/master/install.html) latest version
+* Anaconda
+* [FluidSynth](http://www.fluidsynth.org/) = 1.1.11
+    * `brew install fluidsynth pkg-config`
+* [gsutil](https://cloud.google.com/storage/docs/gsutil_install)
+    * You need `gsutil` to download the Alexander Holm Salamander piano SoundFont from a Magenta GCS bucket (591.9 MiB)
+        * `gsutil -m cp gs://download.magenta.tensorflow.org/soundfonts/Yamaha-C5-Salamander-JNv5.1.sf2 /tmp/`
+* fluidsynth
+    * The software analogue of a MIDI synthesizer.
+    * This is not a `pip` install! There is a module in PyPI of the same name but it is not what we need.
 
 ### Python Libraries ###
-* IPython
-* Anaconda
 
+You can install most (if not all) with `pip install`.
+* IPython
 * [OpenNMT-tf](https://github.com/OpenNMT/OpenNMT-tf) = 1.5.0s
 * [magenta](https://github.com/tensorflow/magenta/blob/master/README.md) = 0.3.8
-
 * tensorflow
 * numpy >= 1.11.0 – just because, how do you do ML without it
 * pandas >= 0.18.1
 * scipy >= 0.18.1
-
-* pillow >= 3.4.2
+* pretty_midi >= 0.2.6
+* [pyfluidsynth](https://github.com/nwhitehead/pyfluidsynth)
+    * This module contains python bindings for FluidSynth. FluidSynth is a software synthesizer for generating music. It works like a MIDI synthesizer. You load patches, set parameters, then send NOTEON and NOTEOFF events to play notes. Instruments are defined in SoundFonts, generally files with the extension SF2. FluidSynth can either be used to play audio itself, or you can call a function that returns chunks of audio data and output the data to the soundcard yourself.
 * bokeh >= 0.12.0
+
+
+### Other ###
+This is a list of other useful but not used python libraries. Putting them here because they were useful during experimentation & development and will come handy for another project, even though they didn't make their way into this one.
+
+* [music21](http://web.mit.edu/music21/)
+    * For handling MusicXML
+* [MuseScore](https://musescore.org/en)
+    * Extends `music21` to allow import/export of MusicXML, and view/edit/export of musical data
+* pillow >= 3.4.2
 * intervaltree >= 2.1.0
 * librosa >= 0.6.0
-* matplotlib >= 1.5.3
 * mido == 1.2.6
 * mir_eval >= 0.4
-* pretty_midi >= 0.2.6
 * python-rtmidi
 * wheel
-
-* [music21](http://web.mit.edu/music21/) – for handling MusicXML
-* [MuseScore](https://musescore.org/en) – extends music21 to allow import/export of MusicXML, and view/edit/export of musical data
 
 
 ### Getting started ###
@@ -67,11 +80,13 @@ For more information/enquiries contact one the administrators of the repository.
 
 
 
-INPUT_DIRECTORY=/Users/vesko/Google\ Drive/Docs/Education/Edinburgh/Classes/DISS/Data/In-use
-SEQUENCES_TFRECORD=file.tfrecord
+`INPUT_DIRECTORY=/Users/vesko/Google\ Drive/Docs/Education/Edinburgh/Classes/DISS/Data/In-use`
+`SEQUENCES_TFRECORD=file.tfrecord`
 
-bazel run //magenta/scripts:convert_dir_to_note_sequences -- --input_dir=$INPUT_DIRECTORY --output_file=$SEQUENCES_TFRECORD --recursive
+`bazel run //magenta/scripts:convert_dir_to_note_sequences -- --input_dir=$INPUT_DIRECTORY --output_file=$SEQUENCES_TFRECORD --recursive`
 
 
-bazel-bin/magenta/scripts/convert_dir_to_note_sequences --input_dir=$INPUT_DIRECTORY --output_file=$SEQUENCES_TFRECORD
+`bazel-bin/magenta/scripts/convert_dir_to_note_sequences --input_dir=$INPUT_DIRECTORY --output_file=$SEQUENCES_TFRECORD`
 
+
+`tensorboard --logdir=./model_run_dir --debugger_port <port_number>`

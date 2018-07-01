@@ -87,15 +87,15 @@ class NMTSmall(onmt.models.SequenceToSequence):
         super(NMTSmall, self).__init__(
             source_inputter=onmt.inputters.WordEmbedder(
                 vocabulary_file_key="source_words_vocabulary",
-                embedding_size=512),
+                embedding_size=354),
             target_inputter=onmt.inputters.WordEmbedder(
                 vocabulary_file_key="target_words_vocabulary",
-                embedding_size=512),
+                embedding_size=354),
             encoder=onmt.encoders.UnidirectionalRNNEncoder(
                 num_layers=2,
                 num_units=512,
                 cell_class=tf.contrib.rnn.LSTMCell,
-                dropout=0.3,
+                dropout=0.1,
                 residual_connections=False),
             decoder=onmt.decoders.AttentionalRNNDecoder(
                 num_layers=2,
@@ -103,7 +103,7 @@ class NMTSmall(onmt.models.SequenceToSequence):
                 bridge=onmt.layers.CopyBridge(),
                 attention_mechanism_class=tf.contrib.seq2seq.LuongAttention,
                 cell_class=tf.contrib.rnn.LSTMCell,
-                dropout=0.3,
+                dropout=0.1,
                 residual_connections=False))
 
 class SeqTagger(onmt.models.SequenceTagger):
