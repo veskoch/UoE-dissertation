@@ -10,13 +10,93 @@ from magenta.pipelines.pipeline import _guarantee_dict
 
 import os
 
+import copy
+
+# Shortcut to chord symbol text annotation type.
+CHORD_SYMBOL = music_pb2.NoteSequence.TextAnnotation.CHORD_SYMBOL
+
+class NoteSequencePipeline(pipeline.Pipeline):
+  """Superclass for pipelines that input and output NoteSequences."""
+
+  def __init__(self, name=None):
+    """Construct a NoteSequencePipeline. Should only be called by subclasses.
+
+    Args:
+      name: Pipeline name.
+    """
+    super(NoteSequencePipeline, self).__init__(
+        input_type=music_pb2.NoteSequence,
+        output_type=music_pb2.NoteSequence,
+        name=name)
+
+class TranspositionPipeline(NoteSequencePipeline):
+  """Creates transposed versions of the input NoteSequence."""
+
+  def __init__(self, 
+                transposition_range, 
+                min_pitch,
+                max_pitch, 
+                name):
+    """Creates a TranspositionPipeline.
+
+    Args:
+      transposition_range: Collection of integer pitch steps to transpose.
+      min_pitch: Integer pitch value below which notes will be considered
+          invalid.
+      max_pitch: Integer pitch value above which notes will be considered
+          invalid.
+      name: Pipeline name.
+    """
+    super(TranspositionPipeline, self).__init__(name=name)
+    self._transposition_range = transposition_range
+    self._min_pitch = min_pitch
+    self._max_pitch = max_pitch
+
+    print('INFO: Transposition pipeline ignores Key Signatures, Pitch Names and Chord Symbols.')
+
+  def transform(self, sequence):
+    stats = dict([(state_name, statistics.Counter(state_name)) for state_name in
+                  ['skipped_due_to_range_exceeded',
+                   'transpositions_generated']])
+
+    # if sequence.key_signatures:
+    #   tf.logging.warn('Key signatures ignored by TranspositionPipeline.')
+    # if any(note.pitch_name for note in sequence.notes):
+    #   tf.logging.warn('Pitch names ignored by TranspositionPipeline.')
+    # if any(ta.annotation_type == CHORD_SYMBOL
+    #        for ta in sequence.text_annotations):
+    #   tf.logging.warn('Chord symbols ignored by TranspositionPipeline.')
+
+    transposed = []
+    for amount in self._transposition_range:
+      # Note that transpose is called even with a transpose amount of zero, to
+      # ensure that out-of-range pitches are handled correctly.
+      ts = self._transpose(sequence, amount, stats)
+      if ts is not None:
+        transposed.append(ts)
+
+    stats['transpositions_generated'].increment(len(transposed))
+    self._set_stats(stats.values())
+    return transposed
+
+  def _transpose(self, ns, amount, stats):
+    """Transposes a note sequence by the specified amount."""
+    ts = copy.deepcopy(ns)
+    for note in ts.notes:
+      if not note.is_drum:
+        note.pitch += amount
+        if note.pitch < self._min_pitch or note.pitch > self._max_pitch:
+          stats['skipped_due_to_range_exceeded'].increment()
+          return None
+    return ts
+
 class PerformanceExtractor(pipeline.Pipeline):
     """Extracts polyphonic tracks from a quantized NoteSequence."""
 
     def __init__(self, min_events, max_events, num_velocity_bins, name=None):
         super(PerformanceExtractor, self).__init__(
             input_type=music_pb2.NoteSequence,
-            output_type=magenta.music.Performance,
+            output_type=magenta.music.MetricPerformance,
             name=name)
         self._min_events = min_events
         self._max_events = max_events
@@ -37,7 +117,7 @@ class PerformanceParser(pipeline.Pipeline):
     
     def __init__(self, name=None):
         super(PerformanceParser, self).__init__(
-            input_type=magenta.music.Performance,
+            input_type=magenta.music.MetricPerformance,
             output_type=str,
             name=name)
         
@@ -164,7 +244,7 @@ def build_vocab(pipeline_config):
     vocab = {
         'ON': (0, 127 + 1),
         'OFF': (0, 127 + 1),
-        'SHIFT': (0, pipeline_config['steps_per_second'] + 1),
+        'SHIFT': (0, 24 + 1),
     }  
     
     if os.path.exists(file_path):
