@@ -3,13 +3,13 @@ run: train
 
 # List of configuration files.
 # Accepts multiples so that some parts can be made reusable.
-config: [model_config.yml]
+config: [train_hyperparams.yml]
 
 # Model type from the catalog.
 model_type: NMTSmall
 
 # Custom model configuration file
-model: 
+model: models_catalog.py
 
 # If set, model_dir will be created relative to this location.
 run_dir:

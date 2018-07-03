@@ -35,9 +35,9 @@ def _prefix_paths(prefix, paths):
     else:
       return path
 
-def main():
+def run():
 
-  args = yaml.load(open('run_config.yml'))
+  args = yaml.load(open('train_run_config.yml'))
   args = namedtuple("Execution_Config", args.keys())(*args.values())
 
   tf.logging.set_verbosity(getattr(tf.logging, args.log_level))
@@ -110,6 +110,5 @@ def main():
         args.predictions_file,
         checkpoint_path=args.checkpoint_path)
 
-
 if __name__ == '__main__':
-  main()
+  run()
