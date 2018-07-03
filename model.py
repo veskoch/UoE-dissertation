@@ -1,5 +1,6 @@
 """Main script."""
 
+import yaml
 import json
 import os
 import six
@@ -34,8 +35,9 @@ def _prefix_paths(prefix, paths):
     else:
       return path
 
-def main(args):
+def main():
 
+  args = yaml.load(open('run_config.yml'))
   args = namedtuple("Execution_Config", args.keys())(*args.values())
 
   tf.logging.set_verbosity(getattr(tf.logging, args.log_level))
@@ -107,3 +109,7 @@ def main(args):
         args.features_file,
         args.predictions_file,
         checkpoint_path=args.checkpoint_path)
+
+
+if __name__ == '__main__':
+  main()
