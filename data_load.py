@@ -7,6 +7,8 @@ import pandas as pd
 from magenta.music import musicxml_reader
 from magenta.music import note_sequence_io 
 
+from collections import Counter
+
 class SourceFolderManager():
     """Manager for the folder which holds the raw .xml data files.
     
@@ -28,62 +30,48 @@ class SourceFolderManager():
     
     """
     
-    def __init__(self, 
-                 src_folder):
-        self.src_folder = src_folder
+    def __init__(self):
+        self.src_folder = None
         self.files_index = None
         self.collated_index = None
         
-    def build_index(self):
+    def build_index(self, src_folder):
         """ Builds DataFrame which indexes and classifies all files in `src_folder`."""
         
+        self.src_folder = src_folder
         files_index = dict()
         
         for path, directories, files in os.walk(self.src_folder):
-            for file in files:
-                file_match = re.match(r'^[A-Za-z0-9]+(_)(adv|int|beg)-[A-Za-z0-9]+-(lh|rh|bh).xml$', file)
+            for f in files:
+                file_match = re.match(r'^[A-Za-z0-9]+(_)(adv|int|beg)-[A-Za-z0-9]+-(lh|rh|bh).xml$', f)
                 if file_match:
-                    file_id = file
-                    name = re.match(r'^[A-Za-z0-9]+(?=(_))', file).group(0)
-                    level = re.search(r'(?<=_)(adv|int|beg)(?=(-))', file).group(0)
-                    segment = re.search(r'(?<=_(adv|int|beg)-)[A-Za-z0-9]+(?=(-))', file).group(0)
-                    hand = re.search(r'(?<=-)(lh|rh|bh)(?=(.xml))', file).group(0)
-                    
+                    file_id = f
+                    name = re.match(r'^[A-Za-z0-9]+(?=(_))', f).group(0)
+                    level = re.search(r'(?<=_)(adv|int|beg)(?=(-))', f).group(0)
+                    segment = re.search(r'(?<=_(adv|int|beg)-)[A-Za-z0-9]+(?=(-))', f).group(0)
+                    hand = re.search(r'(?<=-)(lh|rh|bh)(?=(.xml))', f).group(0)
+
                     files_index[file_id] = {
                         "name" : name,
                         "level" : level,
                         "segment" : segment,
                         "hand" : hand,
-                        "path" : os.path.join(path, file)
+                        "path" : os.path.join(path, f)
                     }
                     
         self.files_index = pd.DataFrame.from_dict(files_index, orient='index').sort_values(by=['segment'])
         
-    def _collate_stats(self, collated):
-        """ Return statistics on the collated list.
-                - number of pairs total
-                - number by type of pair
-                - number of unique songs
-                - histogram of pairs by level
-                - histogram of pairs by segment
-                - number of files ignored with another extension
-                - size of collated .xml files
-
-                TO-DO Save log file with a list of pairs which have been created.
-                + Errors log
-        """
-        pass
-        
     def collate(self, 
-                hand='bh',
+                hand=('bh', 'bh'),
                 includeWholeSong=False,
                 level=[('int', 'adv'), ('beg', 'adv'), ('beg', 'int')],
-                limit=float('-inf')
+                limit=None
                ):
         """Collates source -> target .xml pairs from the data in the `files_index` df. 
             
             Args:
-                hand: One of `lh`, `rh`, `bh`.
+                hand: A tuple such as ('lh', 'rh') which shows desired input and target hand. 
+                A hand is one of `lh`, `rh`, `bh`.
                 includeWholeSong: `False` includes all segments except wholeSong, `True` 
                     includes all segments including wholeSong
                 level: A list of tuples, where the first element is the desired source
@@ -102,41 +90,66 @@ class SourceFolderManager():
             
         """
         assert set(sum(level, ())).issubset(('int', 'adv', 'beg'))
+        assert set(hand).issubset(('lh', 'rh', 'bh'))
+        assert len(hand) == 2
         level = set(level)
-        assert hand in ['lf', 'rh', 'bh']
         
         collated = list()
         
-        _songs_sliced_df = self.files_index.loc[self.files_index['hand'] == hand]
+        # A few lines for efficiency
+        # Slice the index to keep only the rows we will need
+        if hand[0] == hand[1]:
+            _songs_sliced_df = self.files_index.loc[self.files_index['hand'] == hand[0]]
+        else:
+            _songs_sliced_df = self.files_index.copy(deep=True)
         if not includeWholeSong:
             _songs_sliced_df = _songs_sliced_df.loc[_songs_sliced_df['segment'] != 'wholeSong']
+
+        unique_songs = Counter()
+        counter_pair_type = Counter()
+        counter_segment_type = Counter()
         
         # Iterate over all songs
         for i, song_name in enumerate(self.files_index['name'].unique()):
-            if i > limit:
+            if limit and i >= limit:
                 break
             else:
                 # Temp dataframe sliced by the current song and hand
-                _song_df = _songs_sliced_df.loc[(_songs_sliced_df['name'] == song_name) & 
-                                                (_songs_sliced_df['hand'] == hand)]
+                _song_df = _songs_sliced_df.loc[_songs_sliced_df['name'] == song_name]
                 # Get available levels for a song
                 available_levels = _song_df['level'].unique()
                 # Check which requested pairings are possible
                 for pairing in level:
                     assert len(pairing) == 2
                     if pairing[0] in available_levels and pairing[1] in available_levels:
-                        src = _song_df.loc[_song_df['level'] == pairing[0]]['segment']
-                        tgt = _song_df.loc[_song_df['level'] == pairing[1]]['segment']
+                        src = _song_df.loc[(_song_df['level'] == pairing[0])
+                                            & (_song_df['hand'] == hand[0])]
+                        tgt = _song_df.loc[(_song_df['level'] == pairing[1])
+                                            & (_song_df['hand'] == hand[1])]
                         try:
                             # Two levels of difficulty must have matching segments
-                            assert list(src) == list(tgt)
-                            src = _song_df.loc[_song_df['level'] == pairing[0]]['path']
-                            tgt = _song_df.loc[_song_df['level'] == pairing[1]]['path']
-                            collated += list(zip(src, tgt))
+                            assert list(src['segment']) == list(tgt['segment'])
                         except:
-                            print('INFO: Skipping "{}" because of mismatching segments.'.format(song_name))
-        
-        print('INFO: Exported {} collated pairs.'.format(len(collated)))
+                            print('INFO: Skipping "{}" because of mismatching segments or hand parts.'.format(song_name))
+
+                        # Collate
+                        collated += list(zip(src['path'], tgt['path']))
+
+                        # STATS
+                        unique_songs.update({song_name: len(src)})
+                        counter_pair_type.update({pairing: len(src)})
+                        counter_segment_type.update(src['segment'].values)
+
+
+        print('\nINFO: Successfully collated {} pairs from {} unique songs.'.format(len(collated), len(unique_songs) ))
+
+        print('\nCount of pairs by level:')
+        print(counter_pair_type)
+        print('\nCount of pairs by segment type:')
+        print(counter_segment_type)
+        print('\nCount of pairs by song:')
+        print(unique_songs)
+
         self.collated_index = collated
     
     def _xml_to_seq_proto(self, full_xml_path, collection):
@@ -196,3 +209,5 @@ class SourceFolderManager():
 
                 inputs_writer.write(input_proto)
                 targets_writer.write(target_proto)
+
+        print('INFO: Saved to {}.'.format(target_dir))
