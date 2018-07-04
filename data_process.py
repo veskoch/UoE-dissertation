@@ -213,25 +213,29 @@ def run_pipeline_text(pipeline,
     return aggregated_outputs
 
 def build_dataset(pipeline_config, pipeline_graph_def):
-    for collection_name in ['inputs', 'targets']:
-        
-        src_file = os.path.join(pipeline_config['data_source_dir'], 
-                                   collection_name + '.tfrecord')
-        output_dir = pipeline_config['data_target_dir']
-        
-        # Construct the pipeline graph
-        pipeline_graph = pipeline_graph_def(
-            collection_name = collection_name,
-            config = pipeline_config
-        )
+    output_dir = pipeline_config['data_target_dir']
 
-        # Runs pipeline graph on a data source and writes output to dir
-        run_pipeline_text(
-            pipeline_graph,
-            pipeline.tf_record_iterator(src_file,
-                                        pipeline_graph.input_type),
-            output_dir
-        )
+    for src_file in os.listdir(pipeline_config['data_source_dir']):
+        if src_file.endswith('.tfrecord'):
+
+            collection_name = os.path.basename(src_file)   
+            src_file_path = os.path.join(pipeline_config['data_source_dir'], src_file)
+
+            print('INFO: Building {} dataset... Please wait...'.format(collection_name))
+
+            # Construct the pipeline graph
+            pipeline_graph = pipeline_graph_def(
+                collection_name = collection_name,
+                config = pipeline_config
+                )
+
+            # Runs pipeline graph on a data source and writes output to dir
+            run_pipeline_text(
+                pipeline_graph,
+                pipeline.tf_record_iterator(src_file_path,
+                                            pipeline_graph.input_type),
+                output_dir
+                )
 
 def build_vocab(pipeline_config):
     """ This method stands on its own. Invoke after everything else.
@@ -244,7 +248,7 @@ def build_vocab(pipeline_config):
     vocab = {
         'ON': (0, 127 + 1),
         'OFF': (0, 127 + 1),
-        'SHIFT': (0, 24 + 1),
+        'SHIFT': (0, pipeline_config['steps_per_quarter'] * 4 + 1),
     }  
     
     if os.path.exists(file_path):

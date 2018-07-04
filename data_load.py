@@ -63,9 +63,10 @@ class SourceFolderManager():
         
     def collate(self, 
                 hand=('bh', 'bh'),
-                includeWholeSong=False,
                 level=[('int', 'adv'), ('beg', 'adv'), ('beg', 'int')],
-                limit=None
+                includeWholeSong=False,
+                eval_set = [],
+                test_set = []
                ):
         """Collates source -> target .xml pairs from the data in the `files_index` df. 
             
@@ -76,8 +77,6 @@ class SourceFolderManager():
                     includes all segments including wholeSong
                 level: A list of tuples, where the first element is the desired source
                     level of playing difficulty, and the second element is the target
-                limit: an int, the upper bound of the number of songs to process. Useful
-                    for testing & debugging
             
             Returns:
                 A list of ('input_xml_path', 'target_xml_path') tuples 
@@ -94,7 +93,23 @@ class SourceFolderManager():
         assert len(hand) == 2
         level = set(level)
         
-        collated = list()
+        collated = { 'train': [],
+                     'eval': [],
+                     'test': []
+                     }
+
+        counter_by_song = { 'train': Counter(),
+                            'eval': Counter(),
+                            'test': Counter()
+                            }
+        counter_by_level = { 'train': Counter(),
+                             'eval': Counter(),
+                             'test': Counter()
+                             }
+        counter_by_segment = { 'train': Counter(),
+                               'eval': Counter(),
+                               'test': Counter()
+                             }
         
         # A few lines for efficiency
         # Slice the index to keep only the rows we will need
@@ -105,54 +120,57 @@ class SourceFolderManager():
         if not includeWholeSong:
             _songs_sliced_df = _songs_sliced_df.loc[_songs_sliced_df['segment'] != 'wholeSong']
 
-        unique_songs = Counter()
-        counter_pair_type = Counter()
-        counter_segment_type = Counter()
-        
         # Iterate over all songs
-        for i, song_name in enumerate(self.files_index['name'].unique()):
-            if limit and i >= limit:
-                break
+        for song_name in self.files_index['name'].unique():
+
+            if song_name in eval_set:
+                collection = 'eval'
+            elif song_name in test_set:
+                collection = 'test'
             else:
-                # Temp dataframe sliced by the current song and hand
-                _song_df = _songs_sliced_df.loc[_songs_sliced_df['name'] == song_name]
-                # Get available levels for a song
-                available_levels = _song_df['level'].unique()
+                collection = 'train'
+
+            # Temp dataframe sliced by the current song and hand
+            _song_df = _songs_sliced_df.loc[_songs_sliced_df['name'] == song_name]
+            # Get available levels for a song
+            available_levels = _song_df['level'].unique()
+
+            for pairing in level:
+                assert len(pairing) == 2
                 # Check which requested pairings are possible
-                for pairing in level:
-                    assert len(pairing) == 2
-                    if pairing[0] in available_levels and pairing[1] in available_levels:
-                        src = _song_df.loc[(_song_df['level'] == pairing[0])
-                                            & (_song_df['hand'] == hand[0])]
-                        tgt = _song_df.loc[(_song_df['level'] == pairing[1])
-                                            & (_song_df['hand'] == hand[1])]
-                        try:
-                            # Two levels of difficulty must have matching segments
-                            assert list(src['segment']) == list(tgt['segment'])
-                        except:
-                            print('INFO: Skipping "{}" because of mismatching segments or hand parts.'.format(song_name))
+                if pairing[0] in available_levels and pairing[1] in available_levels:
+                    src = _song_df.loc[(_song_df['level'] == pairing[0])
+                                        & (_song_df['hand'] == hand[0])]
+                    tgt = _song_df.loc[(_song_df['level'] == pairing[1])
+                                        & (_song_df['hand'] == hand[1])]
+                    try:
+                        # Two levels of difficulty must have matching segments
+                        assert list(src['segment']) == list(tgt['segment'])
+                    except:
+                        print('INFO: Skipping "{}" because of mismatching segments or hand parts.'.format(song_name))
 
-                        # Collate
-                        collated += list(zip(src['path'], tgt['path']))
+                    # Collate
+                    collated[collection] += list(zip(src['path'], tgt['path']))
 
-                        # STATS
-                        unique_songs.update({song_name: len(src)})
-                        counter_pair_type.update({pairing: len(src)})
-                        counter_segment_type.update(src['segment'].values)
+                    # STATS
+                    counter_by_song[collection].update({song_name: len(src)})
+                    counter_by_level[collection].update({pairing: len(src)})
+                    counter_by_segment[collection].update(src['segment'].values)
 
-
-        print('\nINFO: Successfully collated {} pairs from {} unique songs.'.format(len(collated), len(unique_songs) ))
+        print('\nINFO: Successfully collated Train: {} pairs from {} unique songs.'.format(len(collated['train']), len(counter_by_song['train']) ))
+        print('INFO: Successfully collated Eval: {} pairs from {} unique songs.'.format(len(collated['eval']), len(counter_by_song['eval']) ))
+        print('INFO: Successfully collated Test: {} pairs from {} unique songs.'.format(len(collated['test']), len(counter_by_song['test']) ))
 
         print('\nCount of pairs by level:')
-        print(counter_pair_type)
+        print(counter_by_level)
         print('\nCount of pairs by segment type:')
-        print(counter_segment_type)
+        print(counter_by_segment)
         print('\nCount of pairs by song:')
-        print(unique_songs)
+        print(counter_by_song)
 
         self.collated_index = collated
     
-    def _xml_to_seq_proto(self, full_xml_path, collection):
+    def _xml_to_seq_proto(self, full_xml_path, seq_collection_name):
         """Converts an individual .xml file to a NoteSequence proto. 
         Args:
             full_xml_path: the full path to the file to convert.
@@ -171,7 +189,7 @@ class SourceFolderManager():
                       Error was: {}'.format(full_xml_path, e))
                 return None
 
-            sequence.collection_name = collection
+            sequence.collection_name = seq_collection_name
             sequence.filename = os.path.basename(full_xml_path)
             sequence.id = os.path.basename(full_xml_path)
             return sequence
@@ -188,26 +206,30 @@ class SourceFolderManager():
             
         """
 
-        inputs_path = os.path.join(target_dir, 'inputs' + '.tfrecord')
-        targets_path = os.path.join(target_dir, 'targets' + '.tfrecord')
+        # Iterate over 'train', 'eval' and 'test' collections
+        for collection in self.collated_index.keys():
 
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
-            print('INFO: Created {} directory.'.format(target_dir))
-        else:
-            for path in [inputs_path, targets_path]:
-                if os.path.exists(path):
-                    raise FileExistsError('File {} already exists. Please remove and try again.'
-                                        .format(path))           
+            inputs_path = os.path.join(target_dir, collection + '_inputs' + '.tfrecord')
+            targets_path = os.path.join(target_dir, collection + '_targets' + '.tfrecord')
+
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)
+                print('INFO: Created {} directory.'.format(target_dir))
+            else:
+                for path in [inputs_path, targets_path]:
+                    if os.path.exists(path):
+                        raise FileExistsError('File {} already exists. Please remove and try again.'
+                                            .format(path))           
 
 
-        with note_sequence_io.NoteSequenceRecordWriter(inputs_path) as inputs_writer, \
-        note_sequence_io.NoteSequenceRecordWriter(targets_path) as targets_writer:
-            for i, pair in enumerate(self.collated_index):
-                input_proto = self._xml_to_seq_proto(pair[0], 'inputs')
-                target_proto = self._xml_to_seq_proto(pair[1], 'targets')
+            with note_sequence_io.NoteSequenceRecordWriter(inputs_path) as inputs_writer, \
+            note_sequence_io.NoteSequenceRecordWriter(targets_path) as targets_writer:
+                for i, pair in enumerate(self.collated_index[collection]):
+                    input_proto = self._xml_to_seq_proto(pair[0], collection + '_inputs')
+                    target_proto = self._xml_to_seq_proto(pair[1], collection + '_targets')
 
-                inputs_writer.write(input_proto)
-                targets_writer.write(target_proto)
+                    inputs_writer.write(input_proto)
+                    targets_writer.write(target_proto)
 
-        print('INFO: Saved to {}.'.format(target_dir))
+            print('INFO: Saved {}.'.format(inputs_path))
+            print('INFO: Saved {}.'.format(targets_path))
