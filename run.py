@@ -1,17 +1,18 @@
 """Main script."""
 
-import yaml
+
 import json
 import os
-import six
 import sys
+import argparse
+import six
+import yaml
 from collections import namedtuple
 
 import tensorflow as tf
 
 from opennmt.runner import Runner
 from opennmt.config import load_model, load_config
-
 
 def _prefix_paths(prefix, paths):
   """Recursively prefix paths.
@@ -35,9 +36,9 @@ def _prefix_paths(prefix, paths):
     else:
       return path
 
-def run():
+def main(run_config):
 
-  args = yaml.load(open('train_run_config.yml'))
+  args = yaml.load(open(run_config))
   args = namedtuple("Execution_Config", args.keys())(*args.values())
 
   tf.logging.set_verbosity(getattr(tf.logging, args.log_level))
@@ -111,4 +112,10 @@ def run():
         checkpoint_path=args.checkpoint_path)
 
 if __name__ == '__main__':
-  run()
+
+  parser = argparse.ArgumentParser()
+  parser.add_argument('run_config',
+                      help='Path to .yml file with the configurations for the run.')
+  args = parser.parse_args()
+
+  main(args.run_config)

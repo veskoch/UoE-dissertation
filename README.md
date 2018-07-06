@@ -19,6 +19,8 @@ Each of those steps comes with a set of possible configurations which are explor
 The instruction below pertain to Mac OSX High Sierra.
 
 
+### Mini ###
+
 ### System-level ###
 * Python >= 3.6
 * Anaconda
@@ -44,6 +46,7 @@ You can install most (if not all) with `pip install`.
 * [pyfluidsynth](https://github.com/nwhitehead/pyfluidsynth)
     * This module contains python bindings for FluidSynth.
 * bokeh >= 0.12.0
+* rouge == 0.3.0
 
 
 ### Other ###

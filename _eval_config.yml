@@ -1,35 +1,43 @@
 # One of "train_and_eval", "train", "eval", "infer", "export", "score".
-run: train
+run: eval
 
-# List of configuration files.
-# Accepts multiples so that some parts can be made reusable.
-config: [train_hyperparams.yml]
-
-# Model type from the catalog.
-model_type: NMTSmall
+# ### ### ### ###
+# Important
 
 # Custom model configuration file
-model: models_catalog.py
+model: trained_models/2018-07-05_0645/model.py
 
 # If set, model_dir will be created relative to this location.
-run_dir:
-
-# If set, data files are expected to be relative to this location.
-data_dir:
-
-# Run inference on this file.
-features_file: []
-
-# File used to save predictions. If not set, predictions are printed
-# on the standard output.
-predictions_file: predictions_perf_arr.txt
-
-# Logs some prediction time metrics.
-log_prediction_time: false
+run_dir: trained_models/2018-07-05_0645/
 
 # Checkpoint or directory to use for inference or export 
 # when a directory is set, the latest checkpoint is used
-checkpoint_path: null
+checkpoint_path: trained_models/2018-07-05_0645/
+
+# Run inference on this file.
+features_file: [data/processed/heron/eval_inputs.txt]
+
+
+# ### ### ### ### 
+# Less commonly used
+
+
+# List of configuration files.
+# Accepts multiples so that some parts can be made reusable.
+config: [_eval_hyperparams.yml]
+
+# File used to save predictions. If not set, predictions are printed
+# on the standard output.
+predictions_file: predictions_file.txt
+
+# Model type from the catalog.
+model_type: 
+
+# If set, data files are expected to be relative to this location.
+data_dir: 
+
+# Logs some prediction time metrics.
+log_prediction_time: true
 
 # Number of GPUs to use for in-graph replication.
 num_gpus: 1

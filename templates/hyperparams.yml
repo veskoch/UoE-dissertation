@@ -1,18 +1,22 @@
+# WARNING:
+# Do not use this file as is! It only lists and documents available options
+# without caring about their consistency.
+
 # The directory where models and summaries will be saved. It is created if it does not exist.
-model_dir: log_dir
+model_dir: model_run_dir
 
 data:
   # (required for train_and_eval and train run types).
-  train_features_file: data/performance_seq_text/train_arrangement_inputs.txt
-  train_labels_file: data/performance_seq_text/train_arrangement_targets.txt
+  train_features_file: data/toy-ende/src-train.txt
+  train_labels_file: data/toy-ende/tgt-train.txt
 
   # (required for train_end_eval and eval run types).
-  eval_features_file: data/performance_seq_text/eval_arrangement_inputs.txt
-  eval_labels_file: data/performance_seq_text/eval_arrangement_targets.txt
+  eval_features_file: data/toy-ende/src-val.txt
+  eval_labels_file: data/toy-ende/tgt-val.txt
 
   # (optional) Models may require additional resource files (e.g. vocabularies).
-  source_words_vocabulary: data/performance_seq_text/vocab.txt
-  target_words_vocabulary: data/performance_seq_text/vocab.txt
+  source_words_vocabulary: data/toy-ende/src-vocab.txt
+  target_words_vocabulary: data/toy-ende/tgt-vocab.txt
 
 # Model and optimization parameters.
 params:
@@ -42,13 +46,13 @@ params:
   # (optional unless decay_type is set) The learning rate decay rate.
   decay_rate: 0.7
   # (optional unless decay_type is set) Decay every this many steps.
-  decay_steps: 10000
+  decay_steps: 1000
   # (optional) The number of training steps that make 1 decay step (default: 1).
   decay_step_duration: 1
   # (optional) If true, the learning rate is decayed in a staircase fashion (default: True).
   staircase: true
   # (optional) After how many steps to start the decay (default: 0).
-  start_decay_steps: 50000
+  start_decay_steps: 5000
   # (optional) Stop decay when this learning rate value is reached (default: 0).
   minimum_learning_rate: 0.0001
   # (optional) Type of scheduled sampling (can be "constant", "linear", "exponential",
@@ -78,19 +82,19 @@ train:
   # (optional) Batch size is the number of "examples" or "tokens" (default: "examples").
   batch_type: examples
   # (optional) Save a checkpoint every this many steps.
-  save_checkpoints_steps: 5
+  save_checkpoints_steps: 5000
   # (optional) How many checkpoints to keep on disk.
-  keep_checkpoint_max: 5
+  keep_checkpoint_max: 3
   # (optional) Save summaries every this many steps.
-  save_summary_steps: 5
+  save_summary_steps: 100
   # (optional) Train for this many steps. If not set, train forever.
   train_steps: 1000000
   # (optional) If true, makes a single pass over the training data (default: false).
   single_pass: false
   # (optional) The maximum length of feature sequences during training (default: None).
-  maximum_features_length: 1000
+  maximum_features_length: 70
   # (optional) The maximum length of label sequences during training (default: None).
-  maximum_labels_length: 1000
+  maximum_labels_length: 70
   # (optional) The width of the length buckets to select batch candidates from (default: 5).
   bucket_width: 5
   # (optional) The number of threads to use for processing data in parallel (default: 4).

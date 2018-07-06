@@ -218,7 +218,8 @@ def build_dataset(pipeline_config, pipeline_graph_def):
     for src_file in os.listdir(pipeline_config['data_source_dir']):
         if src_file.endswith('.tfrecord'):
 
-            collection_name = os.path.basename(src_file)   
+            collection_name = os.path.splitext(src_file)[0]
+
             src_file_path = os.path.join(pipeline_config['data_source_dir'], src_file)
 
             print('INFO: Building {} dataset... Please wait...'.format(collection_name))

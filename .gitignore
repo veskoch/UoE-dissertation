@@ -38,9 +38,8 @@ Thumbs.db
 
 
 data/
-log_dir/
-retired/
-tmp/
+run_dir/
+assets/
 __pycache__/
 .ipynb_checkpoints/
-checkpoints/
+trained_models/
