@@ -47,13 +47,13 @@ You can install most (if not all) with `pip install`.
     * This module contains python bindings for FluidSynth.
 * bokeh >= 0.13.0
 * rouge == 0.3.0
+* [music21](http://web.mit.edu/music21/)
+    * For scoring (i.e. tonal certainty)
 
 
 ### Other ###
 This is a list of other useful but not used python libraries. Putting them here because they were useful during experimentation & development and will come handy for another project, even though they didn't make their way into this one.
 
-* [music21](http://web.mit.edu/music21/)
-    * For handling MusicXML
 * [MuseScore](https://musescore.org/en)
     * Extends `music21` to allow import/export of MusicXML, and view/edit/export of musical data
 * pillow >= 3.4.2

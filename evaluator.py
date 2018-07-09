@@ -1,5 +1,6 @@
 """Evaluation related classes and functions."""
 
+from statistics import mean
 import subprocess
 
 import abc
@@ -11,7 +12,9 @@ import six
 import tensorflow as tf
 
 from opennmt.utils.misc import get_third_party_dir
+from utils.text_seqs import TextSequence, TextSequenceCollection
 
+import music21
 
 @six.add_metaclass(abc.ABCMeta)
 class ExternalEvaluator(object):
@@ -150,6 +153,69 @@ class BLEUDetokEvaluator(BLEUEvaluator):
 
   def name(self):
     return "BLEU-detok"
+
+
+class TonalConfidence(ExternalEvaluator):
+    """Calculates the 1) Key Correlation Coefficient and 2) Key Tonal Certainty.
+    Reports both 1) in absolute terms for predictions, and as relative between
+    labels and predictions. 
+    
+    Key Correlation Coefficient: Shows how well this key fits the profile of a 
+        piece in that key.
+    Key Tonal Certainty: Provides a measure of tonal ambiguity for Key determined 
+    with one of many methods.
+
+    In Absolute terms the best possible score is 1, and 0 is the worst.
+    In Relative terms, the best possible score is 0. Range is [-1,1], though
+        negative values are unlikely.
+    
+    """
+
+    def name(self):
+        return "TonalConfidence"
+
+    def score(self, labels_file, predictions_path):
+
+        labels = TextSequenceCollection(labels_file)
+        predictions = TextSequenceCollection(predictions_path)
+
+        score = {
+            cc : { 'labels' : [], 'predictions' : [] },
+            tc : { 'labels' : [], 'predictions' : [] }
+        }
+        
+        for midi in labels.as_midi:
+            score = music21.converter.parse(midi) # <music21.stream.Score ...> dtype
+            key = score.analyze('key')
+            score['cc']['labels'].append(key.correlationCoefficient)
+            score['tc']['labels'].append(key.tonalCertainty())
+
+        for midi in predictions.as_midi:
+            score = music21.converter.parse(midi) # <music21.stream.Score ...> dtype
+            key = score.analyze('key')
+            score['cc']['predictions'].append(key.correlationCoefficient)
+            score['tc']['predictions'].append(key.tonalCertainty())
+        
+        score['cc']['labels'] = mean(score['cc']['labels'])
+        score['tc']['labels'] = mean(score['tc']['labels'])
+        score['cc']['predictions'] = mean(score['cc']['predictions'])
+        score['tc']['predictions'] = mean(score['tc']['predictions'])
+    
+    def _summarize_score(self, step, score):
+        self._summarize_value(step, "Tonal/Correlation_Coefficient", score["cc"]['predictions'])
+        self._summarize_value(step, "Tonal/Tonal_Certainty", score["tc"]['predictions'])
+
+        self._summarize_value(step, "Tonal_Relative/Correlation_Coefficient", score["cc"]['labels'] - score["cc"]['predictions'])
+        self._summarize_value(step, "Tonal_Relative/Tonal_Certainty", score["tc"]['labels'] - score["tc"]['predictions'])
+
+    def _log_score(self, score):
+        tf.logging.info("Key Correlation Coefficient (on predictions):\t{}".format(score["cc"]['predictions']))
+        tf.logging.info("Key Tonal Certainty (on predictions):\t{}".format(score["tc"]['predictions']))
+
+        tf.logging.info("Key Correlation Coefficient (predictions relative to labels):\t{}"
+            .format(score["cc"]['labels'] - score["cc"]['predictions']))
+        tf.logging.info("Key Tonal Certainty (predictions relative to labels):\t{}"
+            .format(score["tc"]['labels'] - score["tc"]['predictions']))
 
 
 def external_evaluation_fn(evaluators_name, labels_file, output_dir=None):
