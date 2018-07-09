@@ -45,7 +45,7 @@ You can install most (if not all) with `pip install`.
 * pretty_midi >= 0.2.6
 * [pyfluidsynth](https://github.com/nwhitehead/pyfluidsynth)
     * This module contains python bindings for FluidSynth.
-* bokeh >= 0.12.0
+* bokeh >= 0.13.0
 * rouge == 0.3.0
 
 

@@ -1,43 +1,32 @@
-# One of "train_and_eval", "train", "eval", "infer", "export", "score".
-run: eval
-
 # ### ### ### ###
 # Important
 
-# Custom model configuration file
-model: trained_models/2018-07-05_0645/model.py
+# One of "train_and_eval", "train", "eval", "infer", "export", "score".
+run: eval
 
-# If set, model_dir will be created relative to this location.
-run_dir: trained_models/2018-07-05_0645/
-
-# Checkpoint or directory to use for inference or export 
-# when a directory is set, the latest checkpoint is used
-checkpoint_path: trained_models/2018-07-05_0645/
-
-# Run inference on this file.
-features_file: [data/processed/heron/eval_inputs.txt]
-
-
-# ### ### ### ### 
-# Less commonly used
-
-
-# List of configuration files.
-# Accepts multiples so that some parts can be made reusable.
-config: [_eval_hyperparams.yml]
-
-# File used to save predictions. If not set, predictions are printed
-# on the standard output.
-predictions_file: predictions_file.txt
-
-# Model type from the catalog.
-model_type: 
-
-# If set, data files are expected to be relative to this location.
-data_dir: 
+# Do you want to score and evaluate the train dataset?
+# Eval dataset will be evauated either way if `run` involves evaluation
+evaluate_train: false
 
 # Logs some prediction time metrics.
 log_prediction_time: true
+
+# If set, model_dir will be created relative to this location.
+run_dir: trained_models/2018-07-08_1343/run_dir/model_dir
+
+# Custom model configuration file
+model: trained_models/2018-07-08_1343/model.py
+
+# Checkpoint or directory to use for inference or export 
+# when a directory is set, the latest checkpoint is used
+checkpoint_path: trained_models/2018-07-08_1343/run_dir/model_dir
+
+# List of configuration files.
+# Accepts multiples so that some parts can be made reusable.
+config: [hyperparams_eval.yml]
+
+# ### ### ### ### 
+# Other
 
 # Number of GPUs to use for in-graph replication.
 num_gpus: 1
@@ -76,3 +65,19 @@ intra_op_parallelism_threads: 0
 # Number of inter op threads (0 means the system picks
 # an appropriate number).
 inter_op_parallelism_threads: 0
+
+# ### ### ### ### 
+# Inactive
+
+# File used to save predictions. If not set, predictions are printed
+# on the standard output.
+predictions_file:
+
+# Run inference on this file.
+features_file:
+
+# Model type from the catalog.
+model_type: 
+
+# If set, data files are expected to be relative to this location.
+data_dir: 

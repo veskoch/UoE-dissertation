@@ -52,7 +52,8 @@ class TranspositionPipeline(NoteSequencePipeline):
     self._min_pitch = min_pitch
     self._max_pitch = max_pitch
 
-    print('INFO: Transposition pipeline ignores Key Signatures, Pitch Names and Chord Symbols.')
+    print('INFO: Transposition {}'.format(transposition_range))
+    print('INFO: Transposition pipeline will ignore Key Signatures, Pitch Names and Chord Symbols.')
 
   def transform(self, sequence):
     stats = dict([(state_name, statistics.Counter(state_name)) for state_name in
@@ -222,7 +223,7 @@ def build_dataset(pipeline_config, pipeline_graph_def):
 
             src_file_path = os.path.join(pipeline_config['data_source_dir'], src_file)
 
-            print('INFO: Building {} dataset... Please wait...'.format(collection_name))
+            print('\nINFO: Building {} dataset...'.format(collection_name))
 
             # Construct the pipeline graph
             pipeline_graph = pipeline_graph_def(

@@ -2,15 +2,12 @@
 model_dir: model_dir
 
 data:
-  # (required for train_and_eval and train run types).
   train_features_file: data/processed/heron/train_inputs.txt
   train_labels_file: data/processed/heron/train_targets.txt
 
-  # (required for train_end_eval and eval run types).
   eval_features_file: data/processed/heron/eval_inputs.txt
   eval_labels_file: data/processed/heron/eval_targets.txt
 
-  # (optional) Models may require additional resource files (e.g. vocabularies).
   source_words_vocabulary: data/processed/heron/vocab.txt
   target_words_vocabulary: data/processed/heron/vocab.txt
 
@@ -46,13 +43,13 @@ params:
   # (optional unless decay_type is set) The learning rate decay rate.
   decay_rate: 0.9
   # (optional unless decay_type is set) Decay every this many steps.
-  decay_steps: 500
+  decay_steps: 1000
   # (optional) The number of training steps that make 1 decay step (default: 1).
   decay_step_duration: 1
   # (optional) If true, the learning rate is decayed in a staircase fashion (default: True).
   staircase: true
   # (optional) After how many steps to start the decay (default: 0).
-  start_decay_steps: 500
+  start_decay_steps: 1000
   # (optional) Stop decay when this learning rate value is reached (default: 0).
   minimum_learning_rate: 1.0e-10
   #
@@ -112,6 +109,11 @@ train:
   # model_dir/avg (default: 0).
   average_last_checkpoints: 5
 
+  # (optional) Save evaluation predictions in model_dir/train/.
+  save_eval_predictions: true
+  external_evaluators: [ROUGE]
+  exporters: last
+
 # (optional) Evaluation options.
 eval:
   # (optional) The batch size to use (default: 32).
@@ -126,27 +128,7 @@ eval:
   save_eval_predictions: true
   # (optional) Evalutator or list of evaluators that are called on the saved evaluation predictions.
   # Available evaluators: BLEU, BLEU-detok, ROUGE
-  external_evaluators: [BLEU, BLEU-detok, ROUGE]
+  external_evaluators: [BLEU]
   # (optional) Model exporter(s) to use during the training and evaluation loop:
   # last, final, best, or null (default: last).
   exporters: last
-
-# (optional) Inference options.
-infer:
-  # (optional) The batch size to use (default: 1).
-  batch_size: 10
-  # (optional) The number of threads to use for processing data in parallel (default: 1).
-  num_threads: 1
-  # (optional) The number of batches to prefetch asynchronously (default: 1).
-  prefetch_buffer_size: 1
-  # (optional) For compatible models, the number of hypotheses to output (default: 1).
-  n_best: 1
-
-# (optional) Scoring options.
-score:
-  # (optional) The batch size to use (default: 64).
-  batch_size: 64
-  # (optional) The number of threads to use for processing data in parallel (default: 1).
-  num_threads: 1
-  # (optional) The number of batches to prefetch asynchronously (default: 1).
-  prefetch_buffer_size: 1

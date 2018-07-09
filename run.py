@@ -11,7 +11,7 @@ from collections import namedtuple
 
 import tensorflow as tf
 
-from opennmt.runner import Runner
+from runner import Runner
 from opennmt.config import load_model, load_config
 
 def _prefix_paths(prefix, paths):
@@ -81,11 +81,13 @@ def main(run_config):
       session_config=session_config)
 
   if args.run == "train_and_eval":
-    runner.train_and_evaluate()
+    runner.train_and_evaluate(checkpoint_path=args.checkpoint_path,
+                              eval_train=args.evaluate_train)
   elif args.run == "train":
     runner.train()
   elif args.run == "eval":
-    runner.evaluate(checkpoint_path=args.checkpoint_path)
+    runner.evaluate(checkpoint_path=args.checkpoint_path, 
+                    eval_train=args.evaluate_train)
   elif args.run == "infer":
     if not args.features_file:
       print('ERROR: features_file is required for inference.')
