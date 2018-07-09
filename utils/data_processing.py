@@ -28,6 +28,37 @@ class NoteSequencePipeline(pipeline.Pipeline):
         input_type=music_pb2.NoteSequence,
         output_type=music_pb2.NoteSequence,
         name=name)
+    
+class TransposerToC(NoteSequencePipeline):
+    """Transposes all Note Sequences to C."""
+
+    def __init__(self, name):
+        """Creates a TranspositionToCPipeline.
+
+        Args:
+          name: Pipeline name.
+        Returns:
+            NoteSequence in C.
+        """
+        super(TransposerToC, self).__init__(name=name)
+
+    def transform(self, sequence):
+        stats = dict([(state_name, statistics.Counter(state_name)) for state_name in
+                      ['transpositions_generated']])
+
+        key = sequence.key_signatures[0].key
+        transposed = self._transpose(sequence, -key, stats)
+        if transposed is not None:
+            stats['transpositions_generated'].increment(1)
+            self._set_stats(stats.values())
+            return [transposed]
+        
+    def _transpose(self, ns, amount, stats):
+        """Transposes a note sequence by the specified amount."""
+        ts = copy.deepcopy(ns)
+        for note in ts.notes:
+            note.pitch += amount
+        return ts
 
 class TranspositionPipeline(NoteSequencePipeline):
   """Creates transposed versions of the input NoteSequence."""
@@ -212,6 +243,8 @@ def run_pipeline_text(pipeline,
                     total_inputs, total_outputs)
     statistics.log_statistics_list(stats, tf.logging.info)
     return aggregated_outputs
+
+
 
 def build_dataset(pipeline_config, pipeline_graph_def):
     output_dir = pipeline_config['data_target_dir']
