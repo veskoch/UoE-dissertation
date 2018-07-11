@@ -9,6 +9,7 @@ from magenta.protobuf import music_pb2
 from magenta.pipelines.pipeline import _guarantee_dict
 
 import os
+import re
 
 import copy
 
@@ -130,8 +131,6 @@ class Reverser(NoteSequencePipeline):
             print('INFO: Augmenting by reversing.')
 
     def transform(self, sequence):
-
-
         reversed_sequence = music_pb2.NoteSequence()
         reversed_sequence.CopyFrom(sequence)
         
@@ -181,7 +180,9 @@ class MetadataExtractor(pipeline.Pipeline):
         meta = {}
         seq_id = sequence.id
         for attr in self.attributes:
-            meta[attr] = self.metadata_df.loc[seq_id][attr]
+            val = self.metadata_df.loc[seq_id][attr]
+            val_no_digits = re.sub("\d", "", val)  
+            meta[attr] = val_no_digits
 
         return [meta]
 
@@ -323,26 +324,41 @@ def build_dataset(pipeline_config, pipeline_graph_def):
                 output_dir
                 )
 
-def build_vocab(pipeline_config):
+def build_vocab(pipeline_config, source_vocab_from=[]):
     """ This method stands on its own. Invoke after everything else.
+
     You need to change this method if you change the Encoding Format,
     or the Encoding Representation.
     """
-    
-    file_path = pipeline_config['data_target_dir'] + 'vocab.txt'
-    
+
+    tokens = set()
+
     vocab = {
         'ON': (0, 127 + 1),
         'OFF': (0, 127 + 1),
         'SHIFT': (0, pipeline_config['steps_per_quarter'] * 4 + 1),
-    }  
+    }
+
+    for action in vocab.keys():
+        for val in range(vocab[action][0], vocab[action][1]):
+            tokens.add(action + str(val))
     
-    if os.path.exists(file_path):
-        print("INFO: File {} exists. Removing. Rebuilding vocabulary.".format(file_path))
-        os.remove(file_path)
-    with open(file_path, 'a') as file:
-        for action in vocab.keys():
-            for val in range(vocab[action][0], vocab[action][1]):
-                file.write(action + str(val) + '\n')
+    # Find tokens from external files,
+    for source in source_vocab_from:
+        path = os.path.join(pipeline_config['data_target_dir'], source)
+        print("INFO: Collecting tokens from {}".format(path))
+        with open(path, 'r') as f:
+            for line in f.read().splitlines():
+                for token in line.split():
+                    tokens.add(token)
+    
+    vocab_path = pipeline_config['data_target_dir'] + 'vocab.txt'
+    if os.path.exists(vocab_path):
+        print("INFO: File {} exists. Removing. Rebuilding vocabulary.".format(vocab_path))
+        os.remove(vocab_path)
+    with open(vocab_path, 'a') as file:
+        for token in tokens:
+            file.write(token + '\n')
                 
     print("INFO: Vocabulary built.")
+    print('INFO: Tokens collected {}'.format(tokens))
