@@ -181,8 +181,13 @@ class MetadataExtractor(pipeline.Pipeline):
         seq_id = sequence.id
         for attr in self.attributes:
             val = self.metadata_df.loc[seq_id][attr]
-            val_no_digits = re.sub("\d", "", val)  
-            meta[attr] = val_no_digits
+            if attr == 'segment': # strip digits
+                val = re.sub("\d", "", val)
+            if attr == 'key':
+                val = re.sub("#", "sharp", val)
+            if attr == 'time_sig':
+                val = re.sub("/", "over", val)
+            meta[attr] = val
 
         return [meta]
 
