@@ -35,30 +35,52 @@ class SourceFolderManager():
         self.files_index = None
         self.collated_index = None
         
-    def build_index(self, src_folder):
+    def build_index(self, src_folder, ext_meta=None):
         """ Builds DataFrame which indexes and classifies all files in `src_folder`."""
-        
+
         self.src_folder = src_folder
         files_index = dict()
-        
+
+        if ext_meta is not None:
+            ext_meta = pd.read_csv(ext_meta)
+
         for path, directories, files in os.walk(self.src_folder):
             for f in files:
                 file_match = re.match(r'^[A-Za-z0-9]+(_)(adv|int|beg)-[A-Za-z0-9]+-(lh|rh|bh).xml$', f)
                 if file_match:
                     file_id = f
-                    name = re.match(r'^[A-Za-z0-9]+(?=(_))', f).group(0)
+                    name_id = re.match(r'^[A-Za-z0-9]+(?=(_))', f).group(0)
                     level = re.search(r'(?<=_)(adv|int|beg)(?=(-))', f).group(0)
                     segment = re.search(r'(?<=_(adv|int|beg)-)[A-Za-z0-9]+(?=(-))', f).group(0)
                     hand = re.search(r'(?<=-)(lh|rh|bh)(?=(.xml))', f).group(0)
 
                     files_index[file_id] = {
-                        "name" : name,
+                        "name_id" : name_id,
                         "level" : level,
                         "segment" : segment,
                         "hand" : hand,
                         "path" : os.path.join(path, f)
                     }
-                    
+
+                    if ext_meta is not None: # Look for additional metadata
+                        meta_sliced = ext_meta[(ext_meta['ID'] == name_id) & (ext_meta['Level'] == level)]
+
+                        if len(meta_sliced) == 0:
+                            print('INFO: Skipped metadata for {}. Found no metadata.'
+                                                                      .format(name_id))
+                        elif len(meta_sliced) != 1:
+                            print('INFO: Skipped metadata for {}. Found multiple conflicting rows.'
+                                                                      .format(name_id))
+                        else:
+                            for key in [('key', 'Magenta_Key'),
+                                         ('mode', 'MajorMinor'),
+                                         ('time_sig', 'Time_Sig'),
+                                         ('genre', 'Genre'),
+                                         ('name', 'Name'),
+                                         ('artist', 'Artist')]:
+                                        
+                                files_index[file_id][key[0]] = meta_sliced[key[1]].values[0]
+
         self.files_index = pd.DataFrame.from_dict(files_index, orient='index').sort_values(by=['segment'])
         
     def collate(self, 
@@ -121,17 +143,17 @@ class SourceFolderManager():
             _songs_sliced_df = _songs_sliced_df.loc[_songs_sliced_df['segment'] != 'wholeSong']
 
         # Iterate over all songs
-        for song_name in self.files_index['name'].unique():
+        for name_id in self.files_index['name_id'].unique():
 
-            if song_name in eval_set:
+            if name_id in eval_set:
                 collection = 'eval'
-            elif song_name in test_set:
+            elif name_id in test_set:
                 collection = 'test'
             else:
                 collection = 'train'
 
             # Temp dataframe sliced by the current song and hand
-            _song_df = _songs_sliced_df.loc[_songs_sliced_df['name'] == song_name]
+            _song_df = _songs_sliced_df.loc[_songs_sliced_df['name_id'] == name_id]
             # Get available levels for a song
             available_levels = _song_df['level'].unique()
 
@@ -147,13 +169,14 @@ class SourceFolderManager():
                         # Two levels of difficulty must have matching segments
                         assert list(src['segment']) == list(tgt['segment'])
                     except:
-                        print('INFO: Skipping "{}" because of mismatching segments or hand parts.'.format(song_name))
+                        print('INFO: Skipping "{}" because of mismatching segments or hand parts.\nSource:\n{}\nTarget:\n{}'
+                              .format(name_id, src['path'], tgt['path']))
 
                     # Collate
                     collated[collection] += list(zip(src['path'], tgt['path']))
 
                     # STATS
-                    counter_by_song[collection].update({song_name: len(src)})
+                    counter_by_song[collection].update({name_id: len(src)})
                     counter_by_level[collection].update({pairing: len(src)})
                     counter_by_segment[collection].update(src['segment'].values)
 
