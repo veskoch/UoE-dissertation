@@ -79,7 +79,7 @@ class TransposerToRange(NoteSequencePipeline):
           invalid.
       name: Pipeline name.
     """
-    super(TranspositionPipeline, self).__init__(name=name)
+    super(TransposerToRange, self).__init__(name=name)
     self._transposition_range = transposition_range
     self._min_pitch = min_pitch
     self._max_pitch = max_pitch
@@ -91,14 +91,6 @@ class TransposerToRange(NoteSequencePipeline):
     stats = dict([(state_name, statistics.Counter(state_name)) for state_name in
                   ['skipped_due_to_range_exceeded',
                    'transpositions_generated']])
-
-    # if sequence.key_signatures:
-    #   tf.logging.warn('Key signatures ignored by TranspositionPipeline.')
-    # if any(note.pitch_name for note in sequence.notes):
-    #   tf.logging.warn('Pitch names ignored by TranspositionPipeline.')
-    # if any(ta.annotation_type == CHORD_SYMBOL
-    #        for ta in sequence.text_annotations):
-    #   tf.logging.warn('Chord symbols ignored by TranspositionPipeline.')
 
     transposed = []
     for amount in self._transposition_range:
@@ -122,6 +114,35 @@ class TransposerToRange(NoteSequencePipeline):
           stats['skipped_due_to_range_exceeded'].increment()
           return None
     return ts
+
+class Reverser(NoteSequencePipeline):
+    def __init__(self, active, name=None):
+        """Creates a pipeline for reversing NoteSequences.
+
+        Args:
+        reverse: Reverse or nor. If False, returns the original. The use 
+        of the flag is to prevent reversing of `train` and `test` datasets.
+        """
+
+        super(Reverser, self).__init__(name=name)
+        self.active = active
+        if active:
+            print('INFO: Augmenting by reversing.')
+
+    def transform(self, sequence):
+
+
+        reversed_sequence = music_pb2.NoteSequence()
+        reversed_sequence.CopyFrom(sequence)
+        
+        if not self.active:
+            return [sequence]
+
+        for note in reversed_sequence.notes:
+            note.start_time = abs(note.start_time - sequence.total_time)
+            note.end_time = abs(note.end_time - sequence.total_time)
+        
+        return [sequence, reversed_sequence]
 
 class PerformanceExtractor(pipeline.Pipeline):
     """Extracts polyphonic tracks from a quantized NoteSequence."""
@@ -173,14 +194,14 @@ class ParserToText(pipeline.Pipeline):
     def __init__(self, name=None):
         super(ParserToText, self).__init__(
             input_type={ 'MetricPerformance': magenta.music.MetricPerformance,
-                         'meta': dict },
+                         'metadata': dict },
             output_type=str,
             name=name)
         
     def transform(self, extracted):
         text_seq = []
 
-        for key, val in extracted['meta'].items():
+        for key, val in extracted['metadata'].items():
             text_seq.append(val)
 
         for event in extracted['MetricPerformance']:
@@ -195,9 +216,6 @@ class ParserToText(pipeline.Pipeline):
         
         return [' '.join(text_seq)]
 
-    
-
-        
 
 def run_pipeline_text(pipeline,
                       input_iterator,
@@ -276,8 +294,6 @@ def run_pipeline_text(pipeline,
                     total_inputs, total_outputs)
     statistics.log_statistics_list(stats, tf.logging.info)
     return aggregated_outputs
-
-
 
 def build_dataset(pipeline_config, pipeline_graph_def):
     output_dir = pipeline_config['data_target_dir']
