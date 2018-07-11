@@ -72,12 +72,13 @@ class SourceFolderManager():
                             print('INFO: Skipped metadata for {}. Found multiple conflicting rows.'
                                                                       .format(name_id))
                         else:
-                            for key in [('key', 'Magenta_Key'),
-                                         ('mode', 'MajorMinor'),
-                                         ('time_sig', 'Time_Sig'),
-                                         ('genre', 'Genre'),
-                                         ('name', 'Name'),
-                                         ('artist', 'Artist')]:
+                            for key in [('key', 'Key'),
+                                        ('key_mag', 'Magenta_Key'),
+                                        ('mode', 'MajorMinor'),
+                                        ('time_sig', 'Time_Sig'),
+                                        ('genre', 'Genre'),
+                                        ('name', 'Name'),
+                                        ('artist', 'Artist')]:
                                         
                                 files_index[file_id][key[0]] = meta_sliced[key[1]].values[0]
 
