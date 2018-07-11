@@ -168,13 +168,20 @@ class MusicScores(ExternalEvaluator):
         piece in that key.
     Key Tonal Certainty: Provides a measure of tonal ambiguity for Key determined 
     with one of many methods.
+
+    [This description is out of data.]
     
     """
 
     def name(self):
-        return "TonalConfidence"
+        return "MusicScores"
 
     def score(self, labels_file, predictions_path):
+        """
+
+        labels_file: Path to labels 
+        predictions_path: Path to file with predictions.
+        """
 
         labels = TextSequenceCollection(labels_file)
         predictions = TextSequenceCollection(predictions_path)
@@ -217,7 +224,7 @@ class MusicScores(ExternalEvaluator):
                 mf.close()
                 label_stream = music21.midi.translate.midiFileToStream(mf)
 
-             with tempfile.NamedTemporaryFile(suffix='.midi') as temp_file:
+            with tempfile.NamedTemporaryFile(suffix='.midi') as temp_file:
                 # call write on pretty_midi, and write to a temporary file
                 prediction_midi.write(temp_file.name)
                 mf = music21.midi.MidiFile()
@@ -250,14 +257,16 @@ class MusicScores(ExternalEvaluator):
 
             # Tempo (in bmp)
             try: # a few (not many) files fail, usually those with one note bar
-                datapoints['tempo']['labels'].append(label_midi.estimate_tempo())
-                datapoints['tempo']['predictions'].append(prediction_midi.estimate_tempo())
+                label_tempo = label_midi.estimate_tempo()
+                prediction_tempo = prediction_midi.estimate_tempo()
+                datapoints['tempo']['labels'].append(label_tempo)
+                datapoints['tempo']['predictions'].append(prediction_tempo)
             except:
                 pass
 
             # Duration
-            datapoints['tempo']['labels'].append(label_midi.get_end_time())
-            datapoints['tempo']['predictions'].append(prediction_midi.get_end_time())
+            datapoints['duration']['labels'].append(label_midi.get_end_time())
+            datapoints['duration']['predictions'].append(prediction_midi.get_end_time())
 
         #############################  
         ### SUMMARIZE DATA-POINTS ###
@@ -275,8 +284,8 @@ class MusicScores(ExternalEvaluator):
         results['tc_dist'] = np.mean(np.abs(np.array(datapoints['tc']['labels']) - np.array(datapoints['tc']['predictions'])))
 
         # Key Accuracy
-        results['key_name_acc'] = datapoints['key_name_acc'] / float(len(labels))
-        results['key_mode_acc'] = datapoints['key_mode_acc'] / float(len(labels))
+        results['key_name_acc'] = datapoints['key_name_matches'] / float(len(labels))
+        results['key_mode_acc'] = datapoints['key_mode_matches'] / float(len(labels))
 
         # Tempo
         datapoints['tempo']['predictions'] = np.array(datapoints['tempo']['predictions'])
@@ -285,6 +294,8 @@ class MusicScores(ExternalEvaluator):
         results['tempo_dist'] = np.mean(np.abs(datapoints['tempo']['labels'] - datapoints['tempo']['predictions']))
 
         # Duration
+        datapoints['duration']['predictions'] = np.array(datapoints['duration']['predictions'])
+        datapoints['duration']['labels'] = np.array(datapoints['duration']['labels'])
         results['duration_dist'] = np.mean(np.abs(datapoints['duration']['labels'] - datapoints['duration']['predictions']))
 
         return results
@@ -320,7 +331,6 @@ class MusicScores(ExternalEvaluator):
         tf.logging.info("Duration/Distance_(s) \t {}".format(score['duration_dist']))
         
 
-        
 def external_evaluation_fn(evaluators_name, labels_file, output_dir=None):
   """Returns a callable to be used in
   :class:`opennmt.utils.hooks.SaveEvaluationPredictionHook` that calls one or

@@ -1,5 +1,5 @@
 from magenta.music.performance_lib import PerformanceEvent
-import magenta.music as mm
+import magenta.music as mm 
 
 import re
 
@@ -26,6 +26,9 @@ class TextSequenceCollection():
         with open(path, 'r') as f:
             collection = f.read().splitlines()
         self.text_seq_list = collection
+
+    def __len__(self):
+        return len(self.text_seq_list)
     
     @property
     def as_note_seq(self):
@@ -120,7 +123,7 @@ class TextSequence():
             elif re.match(r'^SHIFT[0-9]+$', event):
                 event_type = 3
             else:
-                raise ValueError('Unknown event type: %s' % event)
+                continue
                 
             event_value = int(re.search(r'[0-9]+', event).group(0))
             
