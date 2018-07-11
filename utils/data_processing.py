@@ -41,6 +41,7 @@ class TransposerToC(NoteSequencePipeline):
             NoteSequence in C.
         """
         super(TransposerToC, self).__init__(name=name)
+        print('INFO: Transposing all to C.')
 
     def transform(self, sequence):
         stats = dict([(state_name, statistics.Counter(state_name)) for state_name in
@@ -60,7 +61,7 @@ class TransposerToC(NoteSequencePipeline):
             note.pitch += amount
         return ts
 
-class TranspositionPipeline(NoteSequencePipeline):
+class TransposerToRange(NoteSequencePipeline):
   """Creates transposed versions of the input NoteSequence."""
 
   def __init__(self, 
@@ -139,32 +140,64 @@ class PerformanceExtractor(pipeline.Pipeline):
             quantized_sequence,
             num_velocity_bins=self._num_velocity_bins)
         self._set_stats(stats)
+
         return performances
-    
-class PerformanceParser(pipeline.Pipeline):
+
+class MetadataExtractor(pipeline.Pipeline):
+    """Extracts polyphonic tracks from a quantized NoteSequence."""
+
+    def __init__(self, metadata_df=None, attributes=None, name=None):
+
+        self.metadata_df = metadata_df
+        self.attributes = attributes
+
+        super(MetadataExtractor, self).__init__(
+            input_type=music_pb2.NoteSequence,
+            output_type=dict,
+            name=name)
+
+    def transform(self, sequence):
+        meta = {}
+        seq_id = sequence.id
+        for attr in self.attributes:
+            meta[attr] = self.metadata_df.loc[seq_id][attr]
+
+        return [meta]
+
+class ParserToText(pipeline.Pipeline):
     """Converts a Performance into a text sequence.
     
     Individual events become 'words' of A-Z 0-9 separated by space. 
     """
     
     def __init__(self, name=None):
-        super(PerformanceParser, self).__init__(
-            input_type=magenta.music.MetricPerformance,
+        super(ParserToText, self).__init__(
+            input_type={ 'MetricPerformance': magenta.music.MetricPerformance,
+                         'meta': dict },
             output_type=str,
             name=name)
         
-    def transform(self, performance):
-        strs = []
-        for event in performance:
+    def transform(self, extracted):
+        text_seq = []
+
+        for key, val in extracted['meta'].items():
+            text_seq.append(val)
+
+        for event in extracted['MetricPerformance']:
             if event.event_type == performance_lib.PerformanceEvent.NOTE_ON:
-                strs.append('ON%s' % event.event_value)
+                text_seq.append('ON%s' % event.event_value)
             elif event.event_type == performance_lib.PerformanceEvent.NOTE_OFF:
-                strs.append('OFF%s' % event.event_value)
+                text_seq.append('OFF%s' % event.event_value)
             elif event.event_type == performance_lib.PerformanceEvent.TIME_SHIFT:
-                strs.append('SHIFT%s' % event.event_value)
+                text_seq.append('SHIFT%s' % event.event_value)
             else:
                 raise ValueError('Unknown event type: %s' % event.event_type)
-        return [' '.join(strs)]
+        
+        return [' '.join(text_seq)]
+
+    
+
+        
 
 def run_pipeline_text(pipeline,
                       input_iterator,
@@ -224,10 +257,10 @@ def run_pipeline_text(pipeline,
     
     for input_object in input_iterator:
         total_inputs += 1
-        
+
         for name, outputs in _guarantee_dict(
             pipeline.transform(input_object),
-            list(output_names)[0]).items():
+            list(output_names)[0]).items():            
             
             for output in outputs:
                 writers[name].write(output + '\n')
@@ -248,6 +281,8 @@ def run_pipeline_text(pipeline,
 
 def build_dataset(pipeline_config, pipeline_graph_def):
     output_dir = pipeline_config['data_target_dir']
+    
+    print('INFO: Collated data sourced from {}.'.format(pipeline_config['data_source_dir']))
 
     for src_file in os.listdir(pipeline_config['data_source_dir']):
         if src_file.endswith('.tfrecord'):
