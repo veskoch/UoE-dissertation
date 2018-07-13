@@ -11,7 +11,7 @@ from collections import namedtuple
 
 import tensorflow as tf
 
-from runner import Runner
+from utils.runner import Runner
 from opennmt.config import load_model, load_config
 
 def _prefix_paths(prefix, paths):
