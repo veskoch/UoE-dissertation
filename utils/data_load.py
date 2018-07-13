@@ -87,7 +87,7 @@ class SourceFolderManager():
     def collate(self, 
                 hand=('bh', 'bh'),
                 level=[('int', 'adv'), ('beg', 'adv'), ('beg', 'int')],
-                includeWholeSong=False,
+                WholeSong=False,
                 eval_set = [],
                 test_set = []
                ):
@@ -96,8 +96,8 @@ class SourceFolderManager():
             Args:
                 hand: A tuple such as ('lh', 'rh') which shows desired input and target hand. 
                 A hand is one of `lh`, `rh`, `bh`.
-                includeWholeSong: `False` includes all segments except wholeSong, `True` 
-                    includes all segments including wholeSong
+                WholeSong: `False` includes all segments except wholeSong, `True` 
+                    includes only wholeSong segments
                 level: A list of tuples, where the first element is the desired source
                     level of playing difficulty, and the second element is the target
             
@@ -140,8 +140,11 @@ class SourceFolderManager():
             _songs_sliced_df = self.files_index.loc[self.files_index['hand'] == hand[0]]
         else:
             _songs_sliced_df = self.files_index.copy(deep=True)
+            
         if not includeWholeSong:
             _songs_sliced_df = _songs_sliced_df.loc[_songs_sliced_df['segment'] != 'wholeSong']
+        else: 
+            _songs_sliced_df = _songs_sliced_df.loc[_songs_sliced_df['segment'] == 'wholeSong']
 
         # Iterate over all songs
         for name_id in self.files_index['name_id'].unique():
