@@ -78,7 +78,8 @@ class SourceFolderManager():
                                         ('time_sig', 'Time_Sig'),
                                         ('genre', 'Genre'),
                                         ('name', 'Name'),
-                                        ('artist', 'Artist')]:
+                                        ('artist', 'Artist'),
+                                        ('double_note_val', 'Double_Note_Val')]:
                                         
                                 files_index[file_id][key[0]] = meta_sliced[key[1]].values[0]
 
@@ -87,6 +88,7 @@ class SourceFolderManager():
     def collate(self, 
                 hand=('bh', 'bh'),
                 level=[('int', 'adv'), ('beg', 'adv'), ('beg', 'int')],
+                DoubleNoteVal=False,
                 WholeSong=False,
                 eval_set = [],
                 test_set = []
@@ -141,7 +143,7 @@ class SourceFolderManager():
         else:
             _songs_sliced_df = self.files_index.copy(deep=True)
             
-        if not includeWholeSong:
+        if not WholeSong:
             _songs_sliced_df = _songs_sliced_df.loc[_songs_sliced_df['segment'] != 'wholeSong']
         else: 
             _songs_sliced_df = _songs_sliced_df.loc[_songs_sliced_df['segment'] == 'wholeSong']
@@ -166,15 +168,29 @@ class SourceFolderManager():
                 # Check which requested pairings are possible
                 if pairing[0] in available_levels and pairing[1] in available_levels:
                     src = _song_df.loc[(_song_df['level'] == pairing[0])
-                                        & (_song_df['hand'] == hand[0])]
+                                            & (_song_df['hand'] == hand[0])]
                     tgt = _song_df.loc[(_song_df['level'] == pairing[1])
                                         & (_song_df['hand'] == hand[1])]
+                    
                     try:
                         # Two levels of difficulty must have matching segments
                         assert list(src['segment']) == list(tgt['segment'])
                     except:
                         print('INFO: Skipping "{}" because of mismatching segments or hand parts.\nSource:\n{}\nTarget:\n{}'
                               .format(name_id, src['path'], tgt['path']))
+                        continue
+                    
+                    if DoubleNoteVal:
+                        src = _song_df.loc[(_song_df['level'] == pairing[0])
+                                            & (_song_df['hand'] == hand[0])
+                                            & (_song_df['double_note_val'] == 'Yes') ]
+                        
+                        try:
+                            assert list(src['segment']) == list(tgt['segment'])
+                        except:
+                            print('INFO: Skipping "{}" because of no doubling of notes from beg -> int/adv.'
+                              .format(name_id))
+                            continue
 
                     # Collate
                     collated[collection] += list(zip(src['path'], tgt['path']))
