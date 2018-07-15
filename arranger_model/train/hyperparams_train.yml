@@ -2,14 +2,14 @@
 model_dir: r_arb_1
 
 data:
-  train_features_file: data/train_inputs.txt
-  train_labels_file: data/train_targets.txt
+  train_features_file: ../assets/data/cockatoo/train_inputs.txt
+  train_labels_file: ../assets/data/cockatoo/train_targets.txt
 
-  eval_features_file: data/eval_inputs.txt
-  eval_labels_file: data/eval_targets.txt
+  eval_features_file: ../assets/data/cockatoo/eval_inputs.txt
+  eval_labels_file: ../assets/data/cockatoo/eval_targets.txt
 
-  source_words_vocabulary: data/vocab.txt
-  target_words_vocabulary: data/vocab.txt
+  source_words_vocabulary: ../assets/data/cockatoo/vocab.txt
+  target_words_vocabulary: ../assets/data/cockatoo/vocab.txt
 
 # Model and optimization parameters.
 params:
