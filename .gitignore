@@ -36,10 +36,7 @@
 ehthumbs.db
 Thumbs.db
 
-
-data/
-run_dir/
-assets/
 __pycache__/
+_experimental
 .ipynb_checkpoints/
-trained_models/
+.tmp/drivedownload/

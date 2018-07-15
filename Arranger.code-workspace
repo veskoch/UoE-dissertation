@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.pythonPath": "/Users/vesko/anaconda3/envs/jupyter/bin/python"
+	}
+}
