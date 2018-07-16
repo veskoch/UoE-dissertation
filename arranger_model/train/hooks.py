@@ -248,7 +248,7 @@ class EvaluationAtStepHook(tf.train.SessionRunHook):
       if elapsed_time is not None:
         self._evaluate()
   
-  def end(self):  # pylint: disable=unused-argument
+  def end(self, session):  # pylint: disable=unused-argument
     """Runs evaluator for final model."""
     self._evaluate()
 
