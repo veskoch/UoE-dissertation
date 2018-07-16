@@ -80,14 +80,14 @@ def main(run_config):
       gpu_allow_growth=args.gpu_allow_growth,
       session_config=session_config)
 
-  if args.run == "train_and_eval":
-    runner.train_and_evaluate(checkpoint_path=args.checkpoint_path,
-                              eval_train=args.evaluate_train)
+  if args.run == "train_and_eval_2":
+    runner.train_and_eval_2(checkpoint_path=args.checkpoint_path)
+  elif args.run == "train_and_eval":
+    runner.train_and_evaluate(checkpoint_path=args.checkpoint_path)
   elif args.run == "train":
     runner.train()
   elif args.run == "eval":
-    runner.evaluate(checkpoint_path=args.checkpoint_path, 
-                    eval_train=args.evaluate_train)
+    runner.evaluate(checkpoint_path=args.checkpoint_path)
   elif args.run == "infer":
     if not args.features_file:
       print('ERROR: features_file is required for inference.')

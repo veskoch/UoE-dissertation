@@ -8,6 +8,8 @@ import random
 import numpy as np
 import tensorflow as tf
 
+# from tensorflow.contrib.estimator import InMemoryEvaluatorHook
+from hooks import InMemoryEvaluatorHook, EvaluationAtStepHook
 from tensorflow.python.estimator.util import fn_args
 
 from opennmt.utils import hooks, checkpoint
@@ -86,12 +88,16 @@ class Runner(object):
         config=run_config,
         params=self._config["params"])
 
-  def _build_train_spec(self):
+  def _build_train_spec(self, add_hooks=None):
     train_hooks = [
         hooks.LogParametersCountHook(),
         hooks.CountersHook(
-            every_n_steps=self._estimator.config.save_summary_steps,
+            every_n_steps=self._estimator.config.save_summary_steps-1,
             output_dir=self._estimator.model_dir)]
+    
+    if add_hooks:
+      for hook in add_hooks:
+        train_hooks.append(hook)
 
     train_spec = tf.estimator.TrainSpec(
         input_fn=self._model.input_fn(
@@ -113,17 +119,11 @@ class Runner(object):
         hooks=train_hooks)
     return train_spec
 
-  def _build_eval_spec(self, collection):
-    if collection not in self._config:
-      self._config[collection] = {}
-
+  def _build_eval_spec(self):
     eval_hooks = []
     if (self._config['eval'].get("save_eval_predictions", False)
         or self._config['eval'].get("external_evaluators") is not None):
-      if collection == 'eval':
-        save_path = os.path.join(self._estimator.model_dir, collection)
-      elif collection == 'train':
-        save_path = os.path.join(self._estimator.model_dir)
+      save_path = os.path.join(self._estimator.model_dir, 'eval')
       if not os.path.isdir(save_path):
         os.makedirs(save_path)
       eval_hooks.append(hooks.SaveEvaluationPredictionHook(
@@ -131,7 +131,7 @@ class Runner(object):
           os.path.join(save_path, "predictions.txt"),
           post_evaluation_fn=external_evaluation_fn(
               self._config['eval'].get("external_evaluators"),
-              self._config["data"][collection + "_labels_file"],
+              self._config["data"]['eval' + "_labels_file"],
               output_dir=self._estimator.model_dir)))
 
     eval_spec = tf.estimator.EvalSpec(
@@ -139,32 +139,38 @@ class Runner(object):
             tf.estimator.ModeKeys.EVAL,
             self._config['eval'].get("batch_size", 32),
             self._config["data"],
-            self._config["data"][collection + "_features_file"],
+            self._config["data"]["eval_features_file"],
             num_threads=self._config['eval'].get("num_threads"),
             prefetch_buffer_size=self._config['eval'].get("prefetch_buffer_size"),
-            labels_file=self._config["data"][collection + "_labels_file"]),
+            labels_file=self._config["data"]["eval_labels_file"]),
         steps=None,
         hooks=eval_hooks,
         exporters=_make_exporters(
             self._config['eval'].get("exporters", "last"),
             self._model.serving_input_fn(self._config["data"])),
+        start_delay_secs=self._config['eval'].get("start_delay_secs", 120),
         throttle_secs=self._config['eval'].get("eval_delay", 18000))
     return eval_spec
 
-  def train_and_evaluate(self, checkpoint_path=None, eval_train=False):
-    """Runs the training and evaluation loop."""
-    train_spec = self._build_train_spec()
-    eval_spec = self._build_eval_spec('eval')
-    tf.estimator.train_and_evaluate(self._estimator, train_spec, eval_spec)
+  def train_and_eval_2(self, checkpoint_path=None):
+    
+    eval_spec = self._build_eval_spec()
+    at_step_hook = EvaluationAtStepHook(self._estimator,
+                                        eval_spec,
+                                        checkpoint_path,
+                                        every_n_steps=self._estimator.config.save_summary_steps)
+
+    train_spec = self._build_train_spec(add_hooks=[at_step_hook])
+    self._estimator.train(
+        train_spec.input_fn, hooks=train_spec.hooks, max_steps=train_spec.max_steps)
     self._maybe_average_checkpoints()
 
-    if eval_train:
-      # Run evaluation on training dataset too
-      if checkpoint_path is not None and os.path.isdir(checkpoint_path):
-        checkpoint_path = tf.train.latest_checkpoint(checkpoint_path)
-      eval_spec = self._build_eval_spec('train')
-      self._estimator.evaluate(
-        eval_spec.input_fn, hooks=eval_spec.hooks, checkpoint_path=checkpoint_path)
+  def train_and_evaluate(self, checkpoint_path=None):
+    """Runs the training and evaluation loop."""
+    train_spec = self._build_train_spec()
+    eval_spec = self._build_eval_spec()
+    tf.estimator.train_and_evaluate(self._estimator, train_spec, eval_spec)
+    self._maybe_average_checkpoints()
 
   def train(self):
     """Runs the training loop."""
@@ -173,20 +179,13 @@ class Runner(object):
         train_spec.input_fn, hooks=train_spec.hooks, max_steps=train_spec.max_steps)
     self._maybe_average_checkpoints()
 
-  def evaluate(self, checkpoint_path=None, eval_train=False):
+  def evaluate(self, checkpoint_path=None):
     """Runs evaluation."""
     if checkpoint_path is not None and os.path.isdir(checkpoint_path):
       checkpoint_path = tf.train.latest_checkpoint(checkpoint_path)
-    eval_spec = self._build_eval_spec('eval')
+    eval_spec = self._build_eval_spec()
     self._estimator.evaluate(
         eval_spec.input_fn, hooks=eval_spec.hooks, checkpoint_path=checkpoint_path)
-    
-    if eval_train:
-      # Run evaluation on training dataset too
-      eval_spec = self._build_eval_spec('train')
-      self._estimator.evaluate(
-        eval_spec.input_fn, hooks=eval_spec.hooks, checkpoint_path=checkpoint_path)
-      
 
   def _maybe_average_checkpoints(self, avg_subdirectory="avg"):
     """Averages checkpoints if enabled in the training configuration and if the
