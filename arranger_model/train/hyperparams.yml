@@ -2,14 +2,14 @@
 model_dir: r_arb_1
 
 data:
-  train_features_file: ../assets/data/cockatoo/train_inputs.txt
-  train_labels_file: ../assets/data/cockatoo/train_targets.txt
+  train_features_file: ../assets/data/processed/cockatoo/train_inputs.txt
+  train_labels_file: ../assets/data/processed/cockatoo/train_targets.txt
 
-  eval_features_file: ../assets/data/cockatoo/eval_inputs.txt
-  eval_labels_file: ../assets/data/cockatoo/eval_targets.txt
+  eval_features_file: ../assets/data/processed/cockatoo/eval_inputs.txt
+  eval_labels_file: ../assets/data/processed/cockatoo/eval_targets.txt
 
-  source_words_vocabulary: ../assets/data/cockatoo/vocab.txt
-  target_words_vocabulary: ../assets/data/cockatoo/vocab.txt
+  source_words_vocabulary: ../assets/data/processed/cockatoo/vocab.txt
+  target_words_vocabulary: ../assets/data/processed/cockatoo/vocab.txt
 
 # Model and optimization parameters.
 params:
@@ -123,12 +123,13 @@ eval:
   # (optional) The number of batches to prefetch asynchronously (default: 1).
   prefetch_buffer_size: 1
   # (optional) Evaluate every this many seconds (default: 18000).
-  eval_delay: 1800
+  # Alters tf's `throttle_secs` argument. Set to 0 to evaluate every checkpoint
+  eval_delay: 0
   # (optional) Save evaluation predictions in model_dir/eval/.
   save_eval_predictions: true
   # (optional) Evalutator or list of evaluators that are called on the saved evaluation predictions.
   # Available evaluators: BLEU, BLEU-detok, ROUGE
-  external_evaluators: [BLEU]
+  external_evaluators: [bleu, rouge, musicscores]
   # (optional) Model exporter(s) to use during the training and evaluation loop:
   # last, final, best, or null (default: last).
   exporters: last

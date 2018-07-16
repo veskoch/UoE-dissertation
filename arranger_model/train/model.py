@@ -57,5 +57,3 @@ class NMTMedium(onmt.models.SequenceToSequence):
         
 def model():    
     return NMTMedium()
-
-
