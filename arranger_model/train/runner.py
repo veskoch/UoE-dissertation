@@ -34,6 +34,7 @@ class Runner(object):
                config,
                seed=None,
                num_devices=1,
+               per_process_gpu_memory_fraction=1,
                gpu_allow_growth=False,
                session_config=None):
     """Initializes the runner parameters.
@@ -54,7 +55,8 @@ class Runner(object):
         allow_soft_placement=True,
         log_device_placement=False,
         gpu_options=tf.GPUOptions(
-            allow_growth=gpu_allow_growth))
+            allow_growth=gpu_allow_growth,
+            per_process_gpu_memory_fraction=per_process_gpu_memory_fraction))
     if session_config is not None:
       session_config_base.MergeFrom(session_config)
     session_config = session_config_base

@@ -77,6 +77,7 @@ def main(run_config):
       config,
       seed=args.seed,
       num_devices=args.num_gpus,
+      per_process_gpu_memory_fraction=args.per_process_gpu_memory_fraction,
       gpu_allow_growth=args.gpu_allow_growth,
       session_config=session_config)
 
