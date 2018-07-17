@@ -38,4 +38,5 @@ Thumbs.db
 
 __pycache__/
 _experimental
+.ipynb_checkpoints/
 .tmp/drivedownload/
