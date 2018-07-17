@@ -16,8 +16,8 @@ checkpoint_path: run_dir/r_arb_1/
 # ### ### ### ### 
 # Other
 
-# One of "train_and_eval", "train_and_eval_in_memory", "train", "eval", "infer", "export", "score".
-run: train_and_eval
+# One of "train_and_eval", "train_and_eval_2", "train", "eval", "infer", "export", "score".
+run: train_and_eval_2
 
 # Logs some prediction time metrics.
 log_prediction_time: true

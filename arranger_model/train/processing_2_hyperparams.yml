@@ -1,19 +1,19 @@
 # The directory where models and summaries will be saved. It is created if it does not exist.
 # UPDATE THIS
-model_dir: r_arb_1
+model_dir: processing_1
 
 data:
   # UPDATE THIS
-  train_features_file: ../assets/data/processed/cockatoo/train_inputs.txt
-  train_labels_file: ../assets/data/processed/cockatoo/train_targets.txt
+  train_features_file: ../assets/data/processed/cracticinae/train_inputs.txt
+  train_labels_file: ../assets/data/processed/cracticinae/train_targets.txt
 
   # UPDATE THIS
-  eval_features_file: ../assets/data/processed/cockatoo/eval_inputs.txt
-  eval_labels_file: ../assets/data/processed/cockatoo/eval_targets.txt
+  eval_features_file: ../assets/data/processed/cracticinae/eval_inputs.txt
+  eval_labels_file: ../assets/data/processed/cracticinae/eval_targets.txt
 
   # UPDATE THIS
-  source_words_vocabulary: ../assets/data/processed/cockatoo/vocab.txt
-  target_words_vocabulary: ../assets/data/processed/cockatoo/vocab.txt
+  source_words_vocabulary: ../assets/data/processed/cracticinae/cockatoo/vocab.txt
+  target_words_vocabulary: ../assets/data/processed/cracticinae/cockatoo/vocab.txt
 
 # Model and optimization parameters.
 params:
@@ -85,7 +85,7 @@ params:
 train:
   # (optional) Batch size is the number of "examples" or "tokens" (default: "examples").
   batch_type: examples
-  batch_size: 32 # UPDATE THIS
+  batch_size: 64 # UPDATE THIS
   # (optional) Save summaries every this many steps.
   save_summary_steps: 79 # UPDATE THIS
   # (optional) Save a checkpoint every this many steps.

@@ -1,19 +1,19 @@
 # The directory where models and summaries will be saved. It is created if it does not exist.
 # UPDATE THIS
-model_dir: r_arb_1
+model_dir: processing_1
 
 data:
   # UPDATE THIS
-  train_features_file: ../assets/data/processed/cockatoo/train_inputs.txt
-  train_labels_file: ../assets/data/processed/cockatoo/train_targets.txt
+  train_features_file: ../assets/data/processed/babbler/train_inputs.txt
+  train_labels_file: ../assets/data/processed/babbler/train_targets.txt
 
   # UPDATE THIS
-  eval_features_file: ../assets/data/processed/cockatoo/eval_inputs.txt
-  eval_labels_file: ../assets/data/processed/cockatoo/eval_targets.txt
+  eval_features_file: ../assets/data/processed/babbler/eval_inputs.txt
+  eval_labels_file: ../assets/data/processed/babbler/eval_targets.txt
 
   # UPDATE THIS
-  source_words_vocabulary: ../assets/data/processed/cockatoo/vocab.txt
-  target_words_vocabulary: ../assets/data/processed/cockatoo/vocab.txt
+  source_words_vocabulary: ../assets/data/processed/babbler/cockatoo/vocab.txt
+  target_words_vocabulary: ../assets/data/processed/babbler/cockatoo/vocab.txt
 
 # Model and optimization parameters.
 params:
@@ -91,7 +91,7 @@ train:
   # (optional) Save a checkpoint every this many steps.
   save_checkpoints_steps: 79 # UPDATE THIS
   # (optional) Train for this many steps. If not set, train forever.
-  train_steps: 1589 # UPDATE THIS
+  train_steps: 2384 # UPDATE THIS
   # (optional) How many checkpoints to keep on disk.
   keep_checkpoint_max: 10
   # (optional) If true, makes a single pass over the training data (default: false).
