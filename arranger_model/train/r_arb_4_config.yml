@@ -30,12 +30,12 @@ run_dir: run_dir
 # System Resources
 
 # Number of GPUs to use for in-graph replication.
-num_gpus: 1
+num_gpus: 2
 
 # Allocate GPU memory dynamically.
 gpu_allow_growth: true
 
-per_process_gpu_memory_fraction: 0.33
+per_process_gpu_memory_fraction: 0.8
 
 # hostname:port of the chief worker (for distributed training).
 chief_host:

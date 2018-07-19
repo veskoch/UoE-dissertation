@@ -1,6 +1,6 @@
 # The directory where models and summaries will be saved. It is created if it does not exist.
 # UPDATE THIS
-model_dir: processing_1
+model_dir: processing_2
 
 data:
   # UPDATE THIS
@@ -12,8 +12,8 @@ data:
   eval_labels_file: ../assets/data/processed/cracticinae/eval_targets.txt
 
   # UPDATE THIS
-  source_words_vocabulary: ../assets/data/processed/cracticinae/cockatoo/vocab.txt
-  target_words_vocabulary: ../assets/data/processed/cracticinae/cockatoo/vocab.txt
+  source_words_vocabulary: ../assets/data/processed/cracticinae/vocab.txt
+  target_words_vocabulary: ../assets/data/processed/cracticinae/vocab.txt
 
 # Model and optimization parameters.
 params:

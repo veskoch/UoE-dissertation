@@ -1,19 +1,19 @@
 # The directory where models and summaries will be saved. It is created if it does not exist.
 # UPDATE THIS
-model_dir: processing_3
+model_dir: seqlen_2
 
 data:
   # UPDATE THIS
-  train_features_file: ../assets/data/processed/cuckoo/train_inputs.txt
-  train_labels_file: ../assets/data/processed/cuckoo/train_targets.txt
+  train_features_file: ../assets/data/processed/magpie_2/train_inputs.txt
+  train_labels_file: ../assets/data/processed/magpie_2/train_targets.txt
 
   # UPDATE THIS
-  eval_features_file: ../assets/data/processed/cuckoo/eval_inputs.txt
-  eval_labels_file: ../assets/data/processed/cuckoo/eval_targets.txt
+  eval_features_file: ../assets/data/processed/magpie_2/eval_inputs.txt
+  eval_labels_file: ../assets/data/processed/magpie_2/eval_targets.txt
 
   # UPDATE THIS
-  source_words_vocabulary: ../assets/data/processed/cuckoo/vocab.txt
-  target_words_vocabulary: ../assets/data/processed/cuckoo/vocab.txt
+  source_words_vocabulary: ../assets/data/processed/magpie_2/vocab.txt
+  target_words_vocabulary: ../assets/data/processed/magpie_2/vocab.txt
 
 # Model and optimization parameters.
 params:
@@ -47,8 +47,8 @@ params:
   # (optional unless decay_type is set) The learning rate decay rate.
   decay_rate: 0.9
   # (optional unless decay_type is set) Decay every this many steps.
-  start_decay_steps: 9536 # UPDATE THIS
-  decay_steps: 954 # UPDATE THIS
+  start_decay_steps: 2330 # UPDATE THIS
+  decay_steps: 233 # UPDATE THIS
   # (optional) The number of training steps that make 1 decay step (default: 1).
   decay_step_duration: 1
   # (optional) If true, the learning rate is decayed in a staircase fashion (default: True).
@@ -87,13 +87,13 @@ train:
   batch_type: examples
   batch_size: 64 # UPDATE THIS
   # (optional) Save summaries every this many steps.
-  save_summary_steps: 477 # UPDATE THIS
+  save_summary_steps: 466 # UPDATE THIS
   # (optional) Save a checkpoint every this many steps.
-  save_checkpoints_steps: 238 # UPDATE THIS
+  save_checkpoints_steps: 466 # UPDATE THIS
   # (optional) Train for this many steps. If not set, train forever.
-  train_steps: 19073 # UPDATE THIS
+  train_steps: 9318 # UPDATE THIS
   # (optional) How many checkpoints to keep on disk.
-  keep_checkpoint_max: 20
+  keep_checkpoint_max: 10
   # (optional) If true, makes a single pass over the training data (default: false).
   single_pass: false
   # (optional) The maximum length of feature sequences during training (default: None).
@@ -106,7 +106,7 @@ train:
   num_threads: 4
   # (optional) The number of elements from which to sample during shuffling (default: 500000).
   # Set 0 or null to disable shuffling, -1 to match the number of training examples.
-  sample_buffer_size: 100000
+  sample_buffer_size: -1
   # (optional) The number of batches to prefetch asynchronously. If not set, use an
   # automatically tuned value on TensorFlow 1.8+ and 1 on older versions. (default: null).
   prefetch_buffer_size: null

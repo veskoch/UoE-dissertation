@@ -12,8 +12,8 @@ data:
   eval_labels_file: ../assets/data/processed/babbler/eval_targets.txt
 
   # UPDATE THIS
-  source_words_vocabulary: ../assets/data/processed/babbler/cockatoo/vocab.txt
-  target_words_vocabulary: ../assets/data/processed/babbler/cockatoo/vocab.txt
+  source_words_vocabulary: ../assets/data/processed/babbler/vocab.txt
+  target_words_vocabulary: ../assets/data/processed/babbler/vocab.txt
 
 # Model and optimization parameters.
 params:

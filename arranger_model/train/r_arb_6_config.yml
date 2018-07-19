@@ -12,7 +12,6 @@ config: [r_arb_6_hyperparams.yml]
 # when a directory is set, the latest checkpoint is used
 checkpoint_path: run_dir/r_arb_6/
 
-
 # ### ### ### ### 
 # Other
 
@@ -35,7 +34,7 @@ num_gpus: 2
 # Allocate GPU memory dynamically.
 gpu_allow_growth: true
 
-per_process_gpu_memory_fraction: 0.4
+per_process_gpu_memory_fraction: 0.8
 
 # hostname:port of the chief worker (for distributed training).
 chief_host:
