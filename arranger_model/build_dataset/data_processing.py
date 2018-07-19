@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 import magenta
 from magenta.music import performance_lib
@@ -6,6 +7,7 @@ from magenta.pipelines import pipeline
 from magenta.pipelines import statistics
 from magenta.protobuf import music_pb2
 from magenta.pipelines.pipeline import _guarantee_dict
+from magenta.music import sequences_lib
 
 import os
 import re
@@ -14,6 +16,7 @@ import copy
 
 # Shortcut to chord symbol text annotation type.
 CHORD_SYMBOL = music_pb2.NoteSequence.TextAnnotation.CHORD_SYMBOL
+BEAT = music_pb2.NoteSequence.TextAnnotation.BEAT
 
 class NoteSequencePipeline(pipeline.Pipeline):
   """Superclass for pipelines that input and output NoteSequences."""
@@ -222,6 +225,215 @@ class ParserToText(pipeline.Pipeline):
                 raise ValueError('Unknown event type: %s' % event.event_type)
         
         return [' '.join(text_seq)]
+
+class QuantizedSplitter(NoteSequencePipeline):
+  """A Pipeline that splits quantized NoteSequences at regular intervals."""
+
+  def __init__(self, hop_bars, metadata_df=None, name=None):
+    """Creates a Splitter pipeline.
+
+    Args:
+      hop_bars: Hop size in bars that will be used to split a
+          NoteSequence at regular intervals.
+      name: Pipeline name.
+    """
+    super(QuantizedSplitter, self).__init__(name=name)
+    self.hop_bars = hop_bars
+    self.metadata_df = metadata_df
+
+  def transform(self, note_sequence):
+    seq_id = note_sequence.id
+    val = self.metadata_df.loc[seq_id]['double_note_val']
+    if val == 'Yes':
+        multiplier=2
+    else:
+        multiplier=1
+    return split_quantized_note_sequence(
+        note_sequence, self.hop_bars, multiplier=multiplier)
+
+def split_quantized_note_sequence(note_sequence, hop_bars, multiplier=1,
+                        skip_splits_inside_notes=False):
+  """Split one NoteSequence into many at specified intervals.
+
+  If `hop_bars` is a scalar, this function splits a NoteSequence into
+  multiple NoteSequences, all of fixed size. Each of the resulting NoteSequences is 
+  shifted to start at time zero.
+
+  If `hop_bars` is a list, the NoteSequence will be split at the specified bars.
+
+  Args:
+    note_sequence: The NoteSequence to split.
+    hop_bars: The hop size, in bars, at which the NoteSequence will
+        be split. Alternatively, this can be a Python list of bars at which 
+        to split the NoteSequence.
+    skip_splits_inside_notes: If False, the NoteSequence will be split at all
+        hop positions, regardless of whether or not any notes are sustained
+        across the potential split time, thus sustained notes will be truncated.
+        If True, the NoteSequence will not be split at positions that occur
+        within sustained notes.
+
+  Returns:
+    A Python list of NoteSequences.
+  """
+
+#   steps_per_quarter = note_sequence.quantization_info.steps_per_quarter
+#   num = note_sequence.time_signature.numerator
+#   denom = note_sequence.time_signature.denominator
+#   bar_len = 4 * steps_per_quarter * num / denom
+
+  steps_per_bar = int(sequences_lib.steps_per_bar_in_quantized_sequence(note_sequence))
+  hop_size_quantized_steps = np.array(hop_bars) * steps_per_bar * multiplier
+  hop_size_quantized_steps = hop_size_quantized_steps.tolist()
+
+  notes_by_start_step = sorted(list(note_sequence.notes),
+                               key=lambda note: note.quantized_start_step)
+  note_idx = 0
+  notes_crossing_split = []
+
+  
+  if isinstance(hop_size_quantized_steps, list):
+    split_steps = sorted(hop_size_quantized_steps)
+  else:
+    split_steps = np.arange(
+        hop_size_quantized_steps, note_sequence.total_quantized_steps, hop_size_quantized_steps)
+
+  valid_split_steps = [0]
+
+  for split_step in split_steps:
+    # Update notes crossing potential split.
+    while (note_idx < len(notes_by_start_step) and
+           notes_by_start_step[note_idx].quantized_start_step < split_step):
+      notes_crossing_split.append(notes_by_start_step[note_idx])
+      note_idx += 1
+    notes_crossing_split = [note for note in notes_crossing_split
+                            if note.quantized_end_step > split_step]
+
+    if not (skip_splits_inside_notes and notes_crossing_split):
+      valid_split_steps.append(split_step)
+
+  # Handle the final subsequence.
+  if note_sequence.total_quantized_steps > valid_split_steps[-1]:
+    valid_split_steps.append(note_sequence.total_quantized_steps)
+
+  if len(valid_split_steps) > 1:
+    return _extract_quantized_subsequences(note_sequence, valid_split_steps)
+  else:
+    return []
+
+def _extract_quantized_subsequences(sequence, split_steps):
+  """Extracts multiple subsequences from a quantized NoteSequence.
+
+  Args:
+    sequence: The quantized NoteSequence to extract subsequences from.
+    split_times: A Python list of subsequence boundary steps. The first
+        subsequence will start at `split_steps[0]` and end at `split_steps[1]`,
+        the next subsequence will start at `split_steps[1]` and end at
+        `split_steps[2]`, and so on with the last subsequence ending at
+        `split_steps[-1]`.
+
+  Returns:
+    A Python list of new NoteSequence containing the subsequences of `sequence`.
+
+  Raises:
+    QuantizationStatusException: If the sequence has  NOT been quantized.
+    ValueError: If there are fewer than 2 split steps, or the split steps are
+        unsorted, or if any of the subsequences would start past the end of the
+        sequence.
+  """
+  if not sequences_lib.is_quantized_sequence(sequence):
+    raise sequences_lib.QuantizationStatusException(
+        'Can only extract subsequences from quantized NoteSequence.')
+
+  if len(split_steps) < 2:
+    raise ValueError('Must provide at least a start and end step.')
+  if any(t1 > t2 for t1, t2 in zip(split_steps[:-1], split_steps[1:])):
+    raise ValueError('Split steps must be sorted.')
+
+  subsequence = music_pb2.NoteSequence()
+  subsequence.CopyFrom(sequence)
+
+  subsequence.total_quantized_steps = 0
+
+  del subsequence.notes[:]
+  del subsequence.time_signatures[:]
+  del subsequence.key_signatures[:]
+  del subsequence.tempos[:]
+  del subsequence.text_annotations[:]
+  del subsequence.control_changes[:]
+  del subsequence.pitch_bends[:]
+
+  subsequences = [copy.deepcopy(subsequence)
+                  for _ in range(len(split_steps) - 1)]
+
+  # Extract notes into subsequences.
+  subsequence_index = -1
+  for note in sorted(sequence.notes, key=lambda note: note.quantized_start_step):
+    if note.quantized_start_step < split_steps[0]:
+      continue
+    while (subsequence_index < len(split_steps) - 1 and
+           note.quantized_start_step >= split_steps[subsequence_index + 1]):
+      subsequence_index += 1
+    if subsequence_index == len(split_steps) - 1:
+      break
+    subsequences[subsequence_index].notes.extend([note])
+    subsequences[subsequence_index].notes[-1].quantized_start_step -= (
+        split_steps[subsequence_index])
+    subsequences[subsequence_index].notes[-1].quantized_end_step = min(
+        note.quantized_end_step,
+        split_steps[subsequence_index + 1]) - split_steps[subsequence_index]
+    if (subsequences[subsequence_index].notes[-1].quantized_end_step >
+        subsequences[subsequence_index].total_quantized_steps):
+      subsequences[subsequence_index].total_quantized_steps = (
+          subsequences[subsequence_index].notes[-1].quantized_end_step)
+
+  # Extract time signatures, key signatures, tempos, and chord changes (beats
+  # are handled below, other text annotations and pitch bends are deleted).
+  # Additional state events will be added to the beginning of each subsequence.
+
+  events_by_type = [
+      sequence.time_signatures, sequence.key_signatures, sequence.tempos,
+      [annotation for annotation in sequence.text_annotations
+       if annotation.annotation_type == CHORD_SYMBOL]]
+  new_event_containers = [
+      [s.time_signatures for s in subsequences],
+      [s.key_signatures for s in subsequences],
+      [s.tempos for s in subsequences],
+      [s.text_annotations for s in subsequences]
+  ]
+
+  for events, containers in zip(events_by_type, new_event_containers):
+    previous_event = None
+    subsequence_index = -1
+    for event in sorted(events, key=lambda event: event.time):
+      if event.time <= split_steps[0]:
+        previous_event = event
+        continue
+      while (subsequence_index < len(split_steps) - 1 and
+             event.time > split_steps[subsequence_index + 1]):
+        subsequence_index += 1
+        if subsequence_index == len(split_steps) - 1:
+          break
+        if previous_event is not None:
+          # Add state event to the beginning of the subsequence.
+          containers[subsequence_index].extend([previous_event])
+          containers[subsequence_index][-1].time = 0
+      if subsequence_index == len(split_steps) - 1:
+        break
+      # Only add the event if it's actually inside the subsequence (and not on
+      # the boundary with the next one).
+      if event.time < split_steps[subsequence_index + 1]:
+        containers[subsequence_index].extend([event])
+        containers[subsequence_index][-1].time -= split_steps[subsequence_index]
+      previous_event = event
+    # Add final state event to the beginning of all remaining subsequences.
+    while subsequence_index < len(split_steps) - 2:
+      subsequence_index += 1
+      if previous_event is not None:
+        containers[subsequence_index].extend([previous_event])
+        containers[subsequence_index][-1].time = 0
+
+  return subsequences
+
 
 
 def run_pipeline_text(pipeline,
