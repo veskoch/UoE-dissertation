@@ -6,11 +6,11 @@ model: seqlen_model.py
 
 # List of configuration files.
 # Accepts multiples so that some parts can be made reusable.
-config: [seqlen_4_hyperparams.yml]
+config: [seqlen_5_hyperparams.yml]
 
 # Checkpoint or directory to use for inference or export 
 # when a directory is set, the latest checkpoint is used
-checkpoint_path: run_dir/seqlen_4/
+checkpoint_path: run_dir/seqlen_5/
 
 
 # ### ### ### ### 
