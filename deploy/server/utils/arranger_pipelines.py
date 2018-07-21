@@ -184,8 +184,9 @@ class MetadataExtractor(pipeline.Pipeline):
 
         self.metadata_df = metadata_df
         self.attributes = attributes
-
-        print('INFO: Prepending metadata tokens for attributes: {}'.format(attributes))
+        
+        if attributes:
+            print('INFO: Prepending metadata tokens for attributes: {}'.format(attributes))
 
         super(MetadataExtractor, self).__init__(
             input_type=music_pb2.NoteSequence,
