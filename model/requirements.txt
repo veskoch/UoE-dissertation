@@ -1,0 +1,11 @@
+magenta==0.3.9
+tensorflow==1.8.0
+tensorflow-gpu==1.8.0
+ipython==6.4.0
+OpenNMT-tf==1.6.0
+pandas==0.23.3
+pretty-midi==0.2.8
+bokeh==0.13.0
+rouge==0.3.1
+music21==5.1.0
+numpy==1.14.5
