@@ -34,21 +34,11 @@ The instruction below pertain to Mac OSX High Sierra.
 
 ### Python Libraries ###
 
-You can install most (if not all) with `pip install`.
-* IPython
-* [OpenNMT-tf](https://github.com/OpenNMT/OpenNMT-tf) = 1.5.0s
-* [magenta](https://github.com/tensorflow/magenta/blob/master/README.md) = 0.3.8
-* tensorflow
-* numpy >= 1.11.0 – just because, how do you do ML without it
-* pandas >= 0.18.1
-* scipy >= 0.18.1
-* pretty_midi >= 0.2.6
+
+Besides the modules specified in `requirements.txt` you also need to manually install:
+
 * [pyfluidsynth](https://github.com/nwhitehead/pyfluidsynth)
     * This module contains python bindings for FluidSynth.
-* bokeh >= 0.13.0
-* rouge == 0.3.0
-* [music21](http://web.mit.edu/music21/)
-    * For scoring (i.e. tonal certainty)
 
 
 ### Other ###
