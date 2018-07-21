@@ -63,7 +63,7 @@ class Enhancer():
     # ### PIPELINE MAP ###
     # # Converts NoteSequence to TextSequence #
     #
-    # DagInput > Quantizer > > PerformanceExtractor > 'MetricPerformance'
+    # DagInput > Quantizer > PerformanceExtractor > 'MetricPerformance'
     # DagInput > MetadataExtractor > 'metadata'
     # 
     # {'MetricPerformance', 'meta'} > ParserToText > DagOutput
@@ -85,10 +85,9 @@ class Enhancer():
 
     dag = {}
     dag[quantizer] = dag_pipeline.DagInput(music_pb2.NoteSequence)
-    dag[perf_extractor] = dag[quantizer]
+    dag[perf_extractor] = quantizer
     
     dag[meta_extractor] = dag_pipeline.DagInput(music_pb2.NoteSequence)
-    dag[parser] = meta_extractor
     
     dag[parser] = { 'MetricPerformance' : perf_extractor, 
                     'metadata' : meta_extractor }
