@@ -193,7 +193,7 @@ class MetadataExtractor(pipeline.Pipeline):
             name=name)
 
     def transform(self, sequence):
-        if not self.metadata_dfor not self.attributes:
+        if not self.metadata_df or not self.attributes:
             return [{}]
         meta = {}
         seq_id = sequence.id
