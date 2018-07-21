@@ -1,0 +1,90 @@
+# ### ### ### ### 
+# Update for every model
+
+# Custom model configuration file
+model: seqlen_model.py
+
+# List of configuration files.
+# Accepts multiples so that some parts can be made reusable.
+config: [seqlen_3_hyperparams.yml]
+
+# Checkpoint or directory to use for inference or export 
+# when a directory is set, the latest checkpoint is used
+checkpoint_path: run_dir/seqlen_3/
+
+
+# ### ### ### ### 
+# Other
+
+# One of "train_and_eval", "train_and_eval_2", "train", "eval", "infer", "export", "score".
+run: train_and_eval_2
+
+# Logs some prediction time metrics.
+log_prediction_time: true
+
+# If set, model_dir will be created relative to this location.
+run_dir: run_dir
+
+
+# ### ### ### ### 
+# System Resources
+
+# Number of GPUs to use for in-graph replication.
+num_gpus: 2
+
+# Allocate GPU memory dynamically.
+gpu_allow_growth: true
+
+per_process_gpu_memory_fraction: 1.0
+
+# hostname:port of the chief worker (for distributed training).
+chief_host:
+
+# hostname:port of the chief worker (for distributed training).
+chief_host:
+
+# Comma-separated list of hostname:port of workers
+# for distributed training)."
+worker_hosts: 
+
+# Comma-separated list of hostname:port of parameter servers
+# (for distributed training).
+ps_hosts:
+
+# Type of the task to run (for distributed training).
+# One of "chief", "worker", "ps", "evaluator"
+task_type: chief
+
+# ID of the task (for distributed training).
+task_index: 0
+
+# One of "DEBUG", "ERROR", "FATAL", "INFO", "WARN"
+log_level: INFO
+
+# Random seed.
+seed: null
+
+# Number of intra op threads (0 means the system picks
+# an appropriate number).
+intra_op_parallelism_threads: 0
+
+# Number of inter op threads (0 means the system picks
+# an appropriate number).
+inter_op_parallelism_threads: 0
+
+
+# ### ### ### ### 
+# Inactive
+
+# Model type from the catalog.
+model_type: 
+
+# Run inference on this file.
+features_file:
+
+# File used to save predictions. If not set, predictions are printed
+# on the standard output.
+predictions_file:
+
+# If set, data files are expected to be relative to this location.
+data_dir: 
