@@ -8,7 +8,6 @@ The proposed dissertation project is building on the recent momentum in applying
 
 
 ## Workflow ##
-
 On a high level, the process is:
 
 Collate > Preprocess > Build Vocab > Define Model > Train & Eval
@@ -19,10 +18,9 @@ Each of those steps comes with a set of possible configurations which are explor
 The instruction below pertain to Mac OSX High Sierra.
 
 
-### Mini ###
-
 ### System-level ###
-* Python >= 3.6
+* Python == 3.6 (for `model`)
+* Python == 2.7 (for `deploy`)
 * Anaconda
 * [fluidsynth](http://www.fluidsynth.org/) = 1.1.11
     * `brew install fluidsynth pkg-config`
@@ -33,39 +31,15 @@ The instruction below pertain to Mac OSX High Sierra.
         * `gsutil -m cp gs://download.magenta.tensorflow.org/soundfonts/Yamaha-C5-Salamander-JNv5.1.sf2 /tmp/`
 
 ### Python Libraries ###
-
-
 Besides the modules specified in `requirements.txt` you also need to manually install:
-
 * [pyfluidsynth](https://github.com/nwhitehead/pyfluidsynth)
     * This module contains python bindings for FluidSynth.
 
 
-### Other ###
-This is a list of other useful but not used python libraries. Putting them here because they were useful during experimentation & development and will come handy for another project, even though they didn't make their way into this one.
-
-* [MuseScore](https://musescore.org/en)
-    * Extends `music21` to allow import/export of MusicXML, and view/edit/export of musical data
-* pillow >= 3.4.2
-* intervaltree >= 2.1.0
-* librosa >= 0.6.0
-* mido == 1.2.6
-* mir_eval >= 0.4
-* python-rtmidi
-* wheel
-
-
 ### Getting started ###
-
 1. Install all dependencies above
 2. Process the data
 3. [Build dataset -- convert MusicXML to NoteSequences](https://github.com/tensorflow/magenta/blob/master/magenta/scripts/README.md)
-
-
-
-### Useful ###
-Magenta is a [Git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
-
 
 
 #### Who do I talk to? ####
@@ -73,16 +47,3 @@ For more information/enquiries contact one the administrators of the repository.
 
 #### Author ####
 * Vesko Cholakov
-
-
-
-`INPUT_DIRECTORY=/Users/vesko/Google\ Drive/Docs/Education/Edinburgh/Classes/DISS/Data/In-use`
-`SEQUENCES_TFRECORD=file.tfrecord`
-
-`bazel run //magenta/scripts:convert_dir_to_note_sequences -- --input_dir=$INPUT_DIRECTORY --output_file=$SEQUENCES_TFRECORD --recursive`
-
-
-`bazel-bin/magenta/scripts/convert_dir_to_note_sequences --input_dir=$INPUT_DIRECTORY --output_file=$SEQUENCES_TFRECORD`
-
-
-`tensorboard --logdir=./model_run_dir --debugger_port <port_number>`
