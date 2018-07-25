@@ -71,10 +71,7 @@ class TransposerToC(NoteSequencePipeline):
         for note in sequence.notes:
             stats[str(note.pitch)].increment()
 
-        self._set_stats(stats.values())
-        
-            
-        
+        self._set_stats(stats.values())    
 
 class TransposerToRange(NoteSequencePipeline):
   """Creates transposed versions of the input NoteSequence."""
@@ -123,7 +120,7 @@ class TransposerToRange(NoteSequencePipeline):
     """Transposes a note sequence by the specified amount."""
     ts = copy.deepcopy(ns)
     for note in ts.notes:
-      if not note.is_drum:
+      if not note.is_drum: 
         note.pitch += amount
         if note.pitch < self._min_pitch or note.pitch > self._max_pitch:
           stats['skipped_due_to_range_exceeded'].increment()
@@ -175,6 +172,11 @@ class PerformanceExtractor(pipeline.Pipeline):
             num_velocity_bins=self._num_velocity_bins)
         self._set_stats(stats)
 
+        # for performance in performances:
+        #     steps_per_bar = sequences_lib.steps_per_bar_in_quantized_sequence(
+        # quantized_sequence)
+        #     print(performance.num_steps // steps_per_bar)
+
         return performances
 
 class MetadataExtractor(pipeline.Pipeline):
@@ -194,7 +196,7 @@ class MetadataExtractor(pipeline.Pipeline):
             name=name)
 
     def transform(self, sequence):
-        if not self.metadata_df or not self.attributes:
+        if self.metadata_df is None or not self.attributes:
             return [{}]
         meta = {}
         seq_id = sequence.id
@@ -290,11 +292,6 @@ def split_quantized_note_sequence(note_sequence, hop_bars, multiplier=1,
   Returns:
     A Python list of NoteSequences.
   """
-
-#   steps_per_quarter = note_sequence.quantization_info.steps_per_quarter
-#   num = note_sequence.time_signature.numerator
-#   denom = note_sequence.time_signature.denominator
-#   bar_len = 4 * steps_per_quarter * num / denom
 
   steps_per_bar = int(sequences_lib.steps_per_bar_in_quantized_sequence(note_sequence))
   hop_size_quantized_steps = np.array(hop_bars) * steps_per_bar * multiplier
