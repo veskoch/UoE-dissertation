@@ -1,3 +1,4 @@
+
 from magenta.music.performance_lib import PerformanceEvent
 import magenta.music as mm 
 
@@ -81,7 +82,7 @@ class TextSequenceCollection():
         # mm.ntebook_utils.play_sequence(sequence)
             
         mm.play_sequence(self.as_note_seq[i], mm.midi_synth.fluidsynth,
-                                sf2_path='./assets/Yamaha-C5-Salamander-JNv5.1.sf2')
+                                sf2_path='../../assets/soundfonts/Yamaha-C5-Salamander-JNv5.1.sf2')
         
     def viz(self, i):
         """Builds a Bokeh JS pianoroll for the sequence indexed at `i`.
