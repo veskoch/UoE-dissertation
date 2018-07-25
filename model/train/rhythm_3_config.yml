@@ -80,11 +80,11 @@ inter_op_parallelism_threads: 0
 model_type: 
 
 # Run inference on this file.
-features_file:
+features_file: ../assets/data/processed/swallow/eval_inputs.txt
 
 # File used to save predictions. If not set, predictions are printed
 # on the standard output.
-predictions_file:
+predictions_file: inference_on_swallow_eval_with_rhythm_3_ckpt_1803.txt
 
 # If set, data files are expected to be relative to this location.
 data_dir: 
