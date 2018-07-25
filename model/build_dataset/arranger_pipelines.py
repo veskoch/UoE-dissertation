@@ -172,11 +172,6 @@ class PerformanceExtractor(pipeline.Pipeline):
             num_velocity_bins=self._num_velocity_bins)
         self._set_stats(stats)
 
-        # for performance in performances:
-        #     steps_per_bar = sequences_lib.steps_per_bar_in_quantized_sequence(
-        # quantized_sequence)
-        #     print(performance.num_steps // steps_per_bar)
-
         return performances
 
 class MetadataExtractor(pipeline.Pipeline):
