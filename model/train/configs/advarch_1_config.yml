@@ -30,7 +30,7 @@ run_dir: run_dir
 # System Resources
 
 # Number of GPUs to use for in-graph replication.
-num_gpus: 4
+num_gpus: 1
 
 # Allocate GPU memory dynamically.
 gpu_allow_growth: true

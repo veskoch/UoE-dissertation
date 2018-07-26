@@ -1,6 +1,6 @@
 # The directory where models and summaries will be saved. It is created if it does not exist.
 # UPDATE THIS
-model_dir: advarch_1
+model_dir: advarch_1_2
 
 data:
   # UPDATE THIS
@@ -72,7 +72,7 @@ params:
   # (optional) The label smoothing value.
   label_smoothing: 0.1
   # (optional) Width of the beam search (default: 1).
-  beam_width: 5
+  beam_width: 30
   # (optional) Length penaly weight to apply on hypotheses (default: 0).
   length_penalty: 0.2
   # (optional) Maximum decoding iterations before stopping (default: 250).

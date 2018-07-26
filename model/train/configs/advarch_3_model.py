@@ -16,14 +16,14 @@ class RNMTPlusSmall(onmt.models.SequenceToSequence):
             vocabulary_file_key="target_words_vocabulary",
             embedding_size=512),
         encoder=onmt.encoders.RNMTPlusEncoder(
-            num_layers=3,
+            num_layers=2,
             num_units=512,
             cell_class=tf.contrib.rnn.LayerNormBasicLSTMCell,
             dropout=0.3),
         decoder=onmt.decoders.MultiAttentionalRNNDecoder(
-            num_layers=3,
+            num_layers=2,
             num_units=512,
-            attention_layers=[0,1,2],
+            attention_layers=[0,1],
             attention_mechanism_class=tf.contrib.seq2seq.LuongMonotonicAttention,
             cell_class=tf.contrib.rnn.LSTMCell,
             dropout=0.3,

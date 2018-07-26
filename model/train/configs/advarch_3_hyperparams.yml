@@ -47,7 +47,7 @@ params:
   # (optional unless decay_type is set) The learning rate decay rate.
   decay_rate: 0.9
   # (optional unless decay_type is set) Decay every this many steps.
-  start_decay_steps: 5000 # UPDATE THIS
+  start_decay_steps: 8000 # UPDATE THIS
   decay_steps: 1000 # UPDATE THIS
   # (optional) The number of training steps that make 1 decay step (default: 1).
   decay_step_duration: 1
@@ -85,13 +85,13 @@ params:
 train:
   # (optional) Batch size is the number of "examples" or "tokens" (default: "examples").
   batch_type: examples
-  batch_size: 64 # UPDATE THIS
+  batch_size: 32 # UPDATE THIS
   # (optional) Save summaries every this many steps.
   save_summary_steps: 200 # UPDATE THIS
   # (optional) Save a checkpoint every this many steps.
   save_checkpoints_steps: 200 # UPDATE THIS
   # (optional) Train for this many steps. If not set, train forever.
-  train_steps: 10000 # UPDATE THIS
+  train_steps: 20000 # UPDATE THIS
   # (optional) How many checkpoints to keep on disk.
   keep_checkpoint_max: 20
   # (optional) If true, makes a single pass over the training data (default: false).
