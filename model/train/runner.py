@@ -270,6 +270,65 @@ class Runner(object):
 
     if predictions_file:
       stream.close()
+  
+  def get_alignment(self,
+            features_file,
+            checkpoint_path=None,
+            log_time=False):
+    """Runs inference.
+
+    Args:
+      features_file: The file(s) to infer from.
+      checkpoint_path: Path of a specific checkpoint to predict. If ``None``,
+        the latest is used.
+      log_time: If ``True``, several time metrics will be printed in the logs at
+        the end of the inference loop.
+    """
+    if "infer" not in self._config:
+      self._config["infer"] = {}
+    if checkpoint_path is not None and os.path.isdir(checkpoint_path):
+      checkpoint_path = tf.train.latest_checkpoint(checkpoint_path)
+
+    batch_size = self._config["infer"].get("batch_size", 1)
+    input_fn = self._model.input_fn(
+        tf.estimator.ModeKeys.PREDICT,
+        batch_size,
+        self._config["data"],
+        features_file,
+        num_threads=self._config["infer"].get("num_threads"),
+        prefetch_buffer_size=self._config["infer"].get("prefetch_buffer_size"))
+
+    infer_hooks = []
+    if log_time:
+      infer_hooks.append(hooks.LogPredictionTimeHook())
+
+    def _parse_prediction(prediction, params=None):
+      n_best = params and params.get("n_best")
+      n_best = n_best or 1
+
+      if n_best > len(prediction["tokens"]):
+        raise ValueError("n_best cannot be greater than beam_width")
+
+      n_best_sentences = []
+      n_alignments = []
+      for i in range(n_best):
+        tokens = prediction["tokens"][i][:prediction["length"][i] - 1] # Ignore </s>.
+        sentence = self._model.target_inputter.tokenizer.detokenize(tokens)
+        n_best_sentences.append(sentence)
+        n_alignments.append(prediction["alignment"])
+      return n_best_sentences, n_alignments
+
+    sentences, alignments = []
+    for prediction in self._estimator.predict(
+        input_fn=input_fn,
+        checkpoint_path=checkpoint_path,
+        hooks=infer_hooks):
+      n_best_sentences, n_alignments = _parse_prediction(prediction, params=self._config["infer"])
+
+      sentences.extend(n_best_sentences)
+      alignments.extend(n_alignments)
+    
+    return sentences, alignments
 
   def export(self, checkpoint_path=None):
     """Exports a model.

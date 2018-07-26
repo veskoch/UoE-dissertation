@@ -100,6 +100,18 @@ def main(run_config):
         predictions_file=args.predictions_file,
         checkpoint_path=args.checkpoint_path,
         log_time=args.log_prediction_time)
+  elif args.run == "get_alignment":
+    if not args.features_file:
+      print('ERROR: features_file is required for alignment.')
+      raise SystemExit
+    elif len(args.features_file) == 1:
+      args.features_file = args.features_file[0]
+    sentences, alignments = runner.get_alignment(
+        args.features_file,
+        checkpoint_path=args.checkpoint_path,
+        log_time=args.log_prediction_time)
+    return sentences, alignments
+
   elif args.run == "export":
     runner.export(checkpoint_path=args.checkpoint_path)
   elif args.run == "score":
