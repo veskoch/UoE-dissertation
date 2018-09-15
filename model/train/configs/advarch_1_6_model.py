@@ -16,13 +16,13 @@ class ListenAttendSpell(onmt.models.SequenceToSequence):
             vocabulary_file_key="target_words_vocabulary",
             embedding_size=512),
         encoder=onmt.encoders.PyramidalRNNEncoder(
-            num_layers=2,
+            num_layers=3,
             num_units=512,
             reduction_factor=3,
             cell_class=tf.contrib.rnn.LSTMCell,
             dropout=0.3),
         decoder=onmt.decoders.AttentionalRNNDecoder(
-            num_layers=2,
+            num_layers=3,
             num_units=512,
             bridge=onmt.layers.CopyBridge(),
             attention_mechanism_class=tf.contrib.seq2seq.LuongAttention,

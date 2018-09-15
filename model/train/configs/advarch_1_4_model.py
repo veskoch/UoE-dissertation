@@ -21,14 +21,17 @@ class ListenAttendSpell(onmt.models.SequenceToSequence):
             reduction_factor=3,
             cell_class=tf.contrib.rnn.LSTMCell,
             dropout=0.3),
-        decoder=onmt.decoders.AttentionalRNNDecoder(
+        decoder=onmt.decoders.MultiAttentionalRNNDecoder(
             num_layers=2,
             num_units=512,
-            bridge=onmt.layers.CopyBridge(),
-            attention_mechanism_class=tf.contrib.seq2seq.LuongAttention,
+            attention_layers=[0],
+            attention_mechanism_class=tf.contrib.seq2seq.LuongMonotonicAttention,
             cell_class=tf.contrib.rnn.LSTMCell,
             dropout=0.3,
             residual_connections=False))
+            # Additionally, the cell state of this
+            # decoder is not initialized from the encoder state (i.e. a
+            # :class:`opennmt.layers.bridge.ZeroBridge` is imposed).
 
 def model():
     return ListenAttendSpell()

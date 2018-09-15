@@ -1,19 +1,19 @@
 # The directory where models and summaries will be saved. It is created if it does not exist.
 # UPDATE THIS
-model_dir: best_1
+model_dir: advarch_1_3
 
 data:
   # UPDATE THIS
-  train_features_file: ../assets/data/processed/hummingbird/train_inputs.txt
-  train_labels_file: ../assets/data/processed/hummingbird/train_targets.txt
+  train_features_file: ../assets/data/processed/cuckoo/train_inputs.txt
+  train_labels_file: ../assets/data/processed/cuckoo/train_targets.txt
 
   # UPDATE THIS
-  eval_features_file: ../assets/data/processed/hummingbird/eval_inputs.txt
-  eval_labels_file: ../assets/data/processed/hummingbird/eval_targets.txt
+  eval_features_file: ../assets/data/processed/cuckoo/eval_inputs.txt
+  eval_labels_file: ../assets/data/processed/cuckoo/eval_targets.txt
 
   # UPDATE THIS
-  source_words_vocabulary: ../assets/data/processed/hummingbird/vocab.txt
-  target_words_vocabulary: ../assets/data/processed/hummingbird/vocab.txt
+  source_words_vocabulary: ../assets/data/processed/cuckoo/vocab.txt
+  target_words_vocabulary: ../assets/data/processed/cuckoo/vocab.txt
 
 # Model and optimization parameters.
 params:
@@ -47,8 +47,8 @@ params:
   # (optional unless decay_type is set) The learning rate decay rate.
   decay_rate: 0.9
   # (optional unless decay_type is set) Decay every this many steps.
-  start_decay_steps: 32000 # UPDATE THIS
-  decay_steps: 4000 # UPDATE THIS
+  start_decay_steps: 6500 # UPDATE THIS
+  decay_steps: 1000 # UPDATE THIS
   # (optional) The number of training steps that make 1 decay step (default: 1).
   decay_step_duration: 1
   # (optional) If true, the learning rate is decayed in a staircase fashion (default: True).
@@ -87,11 +87,11 @@ train:
   batch_type: examples
   batch_size: 128 # UPDATE THIS
   # (optional) Save summaries every this many steps.
-  save_summary_steps: 4096 # UPDATE THIS
+  save_summary_steps: 254 # UPDATE THIS
   # (optional) Save a checkpoint every this many steps.
-  save_checkpoints_steps: 4096 # UPDATE THIS
+  save_checkpoints_steps: 254 # UPDATE THIS
   # (optional) Train for this many steps. If not set, train forever.
-  train_steps: 128000 # UPDATE THIS
+  train_steps: 20000 # UPDATE THIS
   # (optional) How many checkpoints to keep on disk.
   keep_checkpoint_max: 20
   # (optional) If true, makes a single pass over the training data (default: false).

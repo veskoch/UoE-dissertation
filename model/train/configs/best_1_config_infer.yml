@@ -10,14 +10,15 @@ config: [best_1_hyperparams.yml]
 
 # Checkpoint or directory to use for inference or export 
 # when a directory is set, the latest checkpoint is used
-checkpoint_path: run_dir/best_1/
+checkpoint_path: run_dir/best_1/model.ckpt-13568
+# checkpoint_path: run_dir/best_1/model.ckpt-79104
 
 
 # ### ### ### ### 
 # Other
 
 # One of "train_and_eval", "train_and_eval_2", "train", "eval", "infer", "export", "score".
-run: train_and_eval_2
+run: infer
 
 # Logs some prediction time metrics.
 log_prediction_time: true
@@ -80,11 +81,11 @@ inter_op_parallelism_threads: 0
 model_type: 
 
 # Run inference on this file.
-features_file:
+features_file: ../assets/data/processed/hummingbird/eval_inputs_augmented.txt
 
 # File used to save predictions. If not set, predictions are printed
 # on the standard output.
-predictions_file:
+predictions_file: eval_inputs_augmented_predictions_ckpt-13568.txt
 
 # If set, data files are expected to be relative to this location.
 data_dir: 

@@ -1,6 +1,6 @@
 # The directory where models and summaries will be saved. It is created if it does not exist.
 # UPDATE THIS
-model_dir: best_1
+model_dir: best_2
 
 data:
   # UPDATE THIS
