@@ -175,7 +175,6 @@ class PerformanceExtractor(pipeline.Pipeline):
         return performances
 
 class MetadataExtractor(pipeline.Pipeline):
-    """Extracts polyphonic tracks from a quantized NoteSequence."""
 
     def __init__(self, metadata_df=None, attributes=None, name=None):
 
@@ -235,7 +234,7 @@ class ParserToText(pipeline.Pipeline):
                 text_seq.append('SHIFT%s' % event.event_value)
             else:
                 raise ValueError('Unknown event type: %s' % event.event_type)
-        
+
         return [' '.join(text_seq)]
 
 class QuantizedSplitter(NoteSequencePipeline):
@@ -526,11 +525,10 @@ def build_dataset(pipeline_config, pipeline_graph_def):
     print('INFO: Target {}.'.format(pipeline_config['data_target_dir']))
     print('INFO: Collated data sourced from {}.'.format(pipeline_config['data_source_dir']))
 
-    for src_file in os.listdir(pipeline_config['data_source_dir']):
+    def _process_tfrecord(src_file):
         if src_file.endswith('.tfrecord'):
 
             collection_name = os.path.splitext(src_file)[0]
-
             src_file_path = os.path.join(pipeline_config['data_source_dir'], src_file)
 
             print('\nINFO: Building {} dataset...'.format(collection_name))
@@ -548,6 +546,10 @@ def build_dataset(pipeline_config, pipeline_graph_def):
                                             pipeline_graph.input_type),
                 output_dir
                 )
+
+    for f in os.listdir(pipeline_config['data_source_dir']):
+        _process_tfrecord(f)
+
 
 def build_vocab(pipeline_config, source_vocab_from=[]):
     """ This method stands on its own. Invoke after everything else.
