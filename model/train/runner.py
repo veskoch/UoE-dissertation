@@ -318,7 +318,8 @@ class Runner(object):
         n_alignments.append(prediction["alignment"])
       return n_best_sentences, n_alignments
 
-    sentences, alignments = []
+    sentences = []
+    alignments = []
     for prediction in self._estimator.predict(
         input_fn=input_fn,
         checkpoint_path=checkpoint_path,
