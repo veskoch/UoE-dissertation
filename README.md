@@ -1,49 +1,45 @@
-# Arrangement of Popular Songs with Deep Learning #
+# A.I. Enhancer #
 
-This repository contains the code for the author's dissertation at the MSc Artificial Intelligence program at The University of Edinburgh. -- Summer 2018
+This repository contains the code for the author's dissertation in MSc Artificial Intelligence at The University of Edinburgh in the summer of 2018.
 
+The project shows for the first time an exciting AI implementation which generates and synchronizes appropriate accompaniment to musical melodies in different genres. The inputted melodies can be polyphonic, of varied length, varied difficulty and in different key and time signature. 
 
-### Abstract of Proposed Research ###
-The proposed dissertation project is building on the recent momentum in applying deep learning to music-related tasks. Most of the academic and private sector efforts have gone to devise full algorithmic composition of new content imitating the training corpus. However, the present research takes a different approach. The author looks at building a technology which can support rather than supplant the human creator. Over 12 weeks in the summer, the author will have access to a never-before-used dataset from the music industry to design a Recurrent Neural Network- based architecture which can transform simple monotonic melodic cues from popular songs to elaborate compositions backed by chords, taking extreme ranges and varying rhythmically and dynamically – a reconceptualization known in music jargon as arrangement.
+The workhorse of the model is a deep recurrent sequence-to-sequence architecture (Sutskever et al., 2014, Cho et al., 2014) which has not been used before in a musical context and is known for its successful applications to natural language processing tasks like question-answering, machine translation, image captioning, speech generation and text summarization.
 
-
-## Workflow ##
-On a high level, the process is:
-
-Collate > Preprocess > Build Vocab > Define Model > Train & Eval
-
-Each of those steps comes with a set of possible configurations which are explored for the dissertation.
-
-## Dependencies ##
-The instruction below pertain to Mac OSX High Sierra.
+The project would not have been possible without a unique training dataset which was generously provided by my friend Matt Entwistle at a New York-based educational company which offers online piano lessons. The dataset is a a collection of 200 popular commercial songs, each arranged for piano in at least two different level of performing difficulty (easy, intermediate, advanced) with separate tracks for the melody and the accompaniment. Unfortunately, the data is not part of this repository as the tracks are copyrighted.
 
 
-### System-level ###
-* Python == 3.6 (for `model`)
-* Python == 2.7 (for `deploy`)
-* Anaconda
+### Context ###
+
+The short timeline of the project necessitated the clever use open source libraries and the construction of comprehensive software architecture to automate the collating, preprocessing, training, testing and evaluation.  Following the initial stages of research and planning, I spent a month and a half incrementally developing, testing and refactoring the codebase while gathering feedback from musicians. I developed in Python in Visual Studio, version controlled on GitHub and trained the final models on GPU-accelerated VMs (NVIDIA Tesla K80/P100/V100) on Google Cloud. I developed a suite for automated evaluation and testing and deployed the final model with Flask, Node.js and TensorFlow Serving for interactive front-end serving via a web browser. 
+
+### The Project ###
+
+The project uses [OpenNMT-tf](https://github.com/OpenNMT/OpenNMT-tf) which provides open source tools for sequence learning using TensorFlow. The [Magenta project](https://github.com/tensorflow/magenta), Google’s stab at creating art and music with machine learning, provided a large amount of useful methods for data handling and data preprocessing which I forked and customized for the current project.
+
+The `model` directory holds of the code necessary to build the training dataset (collating the training files & preprocessing the content of the individual files, as well as defining, training and evaluating the model. A few evaluation methods are provided for both quantitative (ROUGE, BLEU, tonal certainty, correlation coefficient, key accuracy, note density) and qualitative evaluation (most notably an audio synthesizer and a tool for visualizing the generated music compositions as a pianoroll).
+
+The `deploy` directory holds the files for front-end deployment, which are mostly borrowed from [AI Duet by Yotam Mann](https://github.com/googlecreativelab/aiexperiments-ai-duet), which provided a beautiful front-end adopted to demo the current project.
+
+A PDF of the dissertation is available in the root directory of the project.
+
+### System Requirements ###
+* Python == 3.6 (for `model` directory)
+* Python == 2.7 (for `deploy` directory)
+* [Jupyter Notebook](jupyter.org/)
 * [fluidsynth](http://www.fluidsynth.org/) = 1.1.11
     * `brew install fluidsynth pkg-config`
-    * FluidSynth is a software synthesizer for generating music. It's the software analogue of a MIDI synthesizer.  You load patches, set parameters, then send NOTEON and NOTEOFF events to play notes. Instruments are defined in SoundFonts, generally files with the extension SF2. FluidSynth can either be used to play audio itself, or you can call a function that returns chunks of audio data and output the data to the soundcard yourself.
-    * This is not a `pip` install! There is a module in PyPI of the same name but it is not what we need. It's very confusing.
+    * FluidSynth is a synthesizer for generating music (the software analogue of a MIDI synthesizer)  You load patches, set parameters, then send NOTEON and NOTEOFF events to play notes. Instruments are defined in SoundFonts with the extension .sf2.
+    * This is not a `pip` install! There is a module in PyPI of the same name but it is not what we need.
 * [gsutil](https://cloud.google.com/storage/docs/gsutil_install)
     * You need `gsutil` to download the Alexander Holm Salamander piano SoundFont from a Magenta GCS bucket (591.9 MiB)
-        * `gsutil -m cp gs://download.magenta.tensorflow.org/soundfonts/Yamaha-C5-Salamander-JNv5.1.sf2 /tmp/`
+    * `gsutil -m cp gs://download.magenta.tensorflow.org/soundfonts/Yamaha-C5-Salamander-JNv5.1.sf2 /tmp/`
 
-### Python Libraries ###
-Besides the modules specified in `requirements.txt` you also need to manually install:
-* [pyfluidsynth](https://github.com/nwhitehead/pyfluidsynth)
-    * This module contains python bindings for FluidSynth.
+### Python Dependencies ###
+Besides the modules specified in `requirements.txt`, you also need to manually install [pyfluidsynth](https://github.com/nwhitehead/pyfluidsynth) which contains python bindings for FluidSynth.
 
-
-### Getting started ###
-1. Install all dependencies above
-2. Process the data
-3. [Build dataset -- convert MusicXML to NoteSequences](https://github.com/tensorflow/magenta/blob/master/magenta/scripts/README.md)
+### Who do I talk to? ###
+For more information & inquiries contact Vesko Cholakov.
 
 
-#### Who do I talk to? ####
-For more information/enquiries contact one the administrators of the repository.
-
-#### Author ####
-* Vesko Cholakov
+Last updated: September 2018
