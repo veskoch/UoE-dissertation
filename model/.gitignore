@@ -37,7 +37,7 @@ ehthumbs.db
 Thumbs.db
 
 
-assets/
+assets/_private
 __pycache__/
 .ipynb_checkpoints/
 train/run_dir/
