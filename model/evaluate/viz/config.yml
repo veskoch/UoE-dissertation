@@ -14,11 +14,12 @@ checkpoint_path:
 
 
 # One of "train_and_eval", "train_and_eval_2", "train", "eval", "infer", "export", "score".
-run: get_alignment
+# run: get_alignment
+run: infer
 
 
 # Run inference on this file.
-features_file: features_file_tiny.txt
+features_file: features.txt
 
 
 # ### ### ### ### 
@@ -85,3 +86,7 @@ model_type:
 
 # If set, data files are expected to be relative to this location.
 data_dir: 
+
+# File used to save predictions. If not set, predictions are printed
+# on the standard output.
+predictions_file: predictions_file.txt
