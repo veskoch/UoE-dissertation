@@ -38,22 +38,46 @@ class AI extends events.EventEmitter{
 		this._track = this._midi.track()
 	}
 
+	// send(){
+	// 	//trim the track to the first note
+	// 	if (this._track.length){
+	// 		let request = this._midi.slice(this._midi.startTime)
+	// 		this._newTrack()
+	// 		let endTime = request.duration
+	// 		//shorten the request if it's too long
+	// 		if (endTime > 10){
+	// 			request = request.slice(request.duration - 15)
+	// 			endTime = request.duration
+	// 		}
+	// 		let additional = endTime
+	// 		additional = Math.min(additional, 8)
+	// 		additional = Math.max(additional, 1)
+	// 		request.load(`./predict?duration=${endTime + additional}`, JSON.stringify(request.toArray()), 'POST').then((response) => {
+	// 			response.slice(endTime / 2).tracks[1].notes.forEach((note) => {
+	// 				const now = Tone.now() + 0.05
+	// 				if (note.noteOn + now > this._aiEndTime){
+	// 					this._aiEndTime = note.noteOn + now
+	// 					this.emit('keyDown', note.midi, note.noteOn + now)
+	// 					note.duration = note.duration * 0.9
+	// 					note.duration = Math.min(note.duration, 4)
+	// 					this.emit('keyUp', note.midi, note.noteOff + now)
+	// 				}
+	// 			})
+	// 		})
+	// 		this._lastPhrase = -1
+	// 		this.emit('sent')
+	// 	}
+	// }
+
+
 	send(){
 		//trim the track to the first note
 		if (this._track.length){
 			let request = this._midi.slice(this._midi.startTime)
 			this._newTrack()
 			let endTime = request.duration
-			//shorten the request if it's too long
-			if (endTime > 10){
-				request = request.slice(request.duration - 15)
-				endTime = request.duration
-			}
-			let additional = endTime
-			additional = Math.min(additional, 8)
-			additional = Math.max(additional, 1)
-			request.load(`./predict?duration=${endTime + additional}`, JSON.stringify(request.toArray()), 'POST').then((response) => {
-				response.slice(endTime / 2).tracks[1].notes.forEach((note) => {
+			request.load(`./predict?duration=${endTime}`, JSON.stringify(request.toArray()), 'POST').then((response) => {
+				response.slice(endTime / 3).tracks[1].notes.forEach((note) => {
 					const now = Tone.now() + 0.05
 					if (note.noteOn + now > this._aiEndTime){
 						this._aiEndTime = note.noteOn + now
